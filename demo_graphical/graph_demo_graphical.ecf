@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-10-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-10-0 http://www.eiffel.com/developers/xml/configuration-1-10-0.xsd" name="graph_demo_graphical" uuid="CC9B4257-76EE-48C6-A333-175663034940">
+	<target name="graphs">
+		<root class="GRAPH_APPLICATION" feature="make_and_launch"/>
+		<option warning="true" full_class_checking="true" cat_call_detection="false" is_attached_by_default="true" void_safety="all" syntax="standard">
+			<assertions precondition="true" postcondition="true" check="true" supplier_precondition="true"/>
+		</option>
+		<setting name="automatic_backup" value="true"/>
+		<library name="base" location="$ISE_LIBRARY\library\base\base-safe.ecf">
+			<option>
+				<assertions precondition="true"/>
+			</option>
+		</library>
+		<library name="jj_graphs" location="$JJ_SOURCE\jj_graphs\jj_graphs.ecf" readonly="false"/>
+		<library name="jj_support" location="$JJ_SOURCE\jj_support\jj_support.ecf"/>
+		<library name="jj_vision" location="$JJ_SOURCE\jj_vision\jj_vision.ecf" readonly="false"/>
+		<library name="uuid" location="$ISE_LIBRARY\library\uuid\uuid-safe.ecf"/>
+		<library name="vision2" location="$ISE_LIBRARY\library\vision2\vision2-safe.ecf" readonly="false">
+			<option>
+				<assertions precondition="true"/>
+			</option>
+		</library>
+		<library name="wel" location="$ISE_LIBRARY\library\wel\wel-safe.ecf"/>
+		<cluster name="demo_graphical" location=".\" recursive="true">
+			<file_rule>
+				<exclude>/EIFGENs$</exclude>
+				<exclude>/CVS$</exclude>
+				<exclude>/jj_tracer$</exclude>
+				<exclude>/demo$</exclude>
+				<exclude>/.svn$</exclude>
+				<exclude>/jj_override$</exclude>
+			</file_rule>
+		</cluster>
+		<override name="jj_override" location=".\jj_override\" recursive="true">
+			<option void_safety="all" syntax="standard">
+			</option>
+		</override>
+	</target>
+</system>

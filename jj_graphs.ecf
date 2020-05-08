@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-12-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-12-0 http://www.eiffel.com/developers/xml/configuration-1-12-0.xsd" name="graphs" uuid="A2EC60F7-4CE2-4F45-B8C7-F1099F138EF8" library_target="graphs">
+	<target name="graphs">
+		<root all_classes="true"/>
+		<file_rule>
+			<exclude>/\.svn</exclude>
+		</file_rule>
+		<option warning="true" full_class_checking="true" is_attached_by_default="true" void_safety="all" syntax="standard">
+			<assertions precondition="true"/>
+		</option>
+		<library name="base" location="$ISE_LIBRARY\library\base\base-safe.ecf"/>
+		<library name="jj_containers" location="$JJ_GITHUB\jj_containers\jj_containers.ecf" readonly="false"/>
+		<cluster name="graphs" location=".\" recursive="true">
+			<description>These classes represent graphs, where a graph is a collection of nodes and edges.</description>
+			<file_rule>
+				<exclude>/to be done$</exclude>
+				<exclude>/tests$</exclude>
+				<exclude>/demo$</exclude>
+				<exclude>/demo_graphical$</exclude>
+				<exclude>/docs$</exclude>
+			</file_rule>
+		</cluster>
+	</target>
+</system>
