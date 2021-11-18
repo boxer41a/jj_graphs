@@ -1,33 +1,41 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-15-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-15-0 http://www.eiffel.com/developers/xml/configuration-1-15-0.xsd" name="graphs_demo" uuid="A2EC70F7-4CE2-4F45-B8C7-F1099F138EF8">
+<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-21-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-21-0 http://www.eiffel.com/developers/xml/configuration-1-21-0.xsd" name="graphs_demo" uuid="A2EC70F7-4CE2-4F45-B8C7-F1099F138EF8">
 	<target name="graphs_demo">
 		<root class="APPLICATION" feature="make"/>
 		<file_rule>
 			<exclude>/\.svn</exclude>
 		</file_rule>
-		<option warning="true" full_class_checking="true" is_attached_by_default="true" is_obsolete_routine_type="true" void_safety="all" syntax="standard">
-			<assertions precondition="true" postcondition="true" check="true"/>
+		<option warning="warning" manifest_array_type="mismatch_warning">
+			<assertions precondition="true" postcondition="true" check="true" invariant="true" loop="true" supplier_precondition="true"/>
 		</option>
-		<precompile name="base-safe_precompile" location="$ISE_PRECOMP\base-safe.ecf"/>
-		<library name="base-safe" location="$ISE_LIBRARY\library\base\base-safe.ecf">
-			<option is_obsolete_routine_type="true">
-				<assertions/>
+		<setting name="total_order_on_reals" value="false"/>
+		<setting name="dead_code_removal" value="feature"/>
+		<capability>
+			<concurrency support="none"/>
+			<void_safety support="all"/>
+		</capability>
+		<library name="base" location="$ISE_LIBRARY\library\base\base.ecf"/>
+		<library name="jj_containers" location="..\..\jj_containers\jj_containers.ecf" readonly="false">
+			<option>
+				<assertions precondition="true" postcondition="true" check="true" invariant="true" supplier_precondition="true"/>
 			</option>
 		</library>
-		<library name="jj_containers" location="$JJ_SOURCE\jj_containers\jj_containers.ecf"/>
 		<library name="jj_graphs" location="..\jj_graphs.ecf" readonly="false">
-			<option is_obsolete_routine_type="true">
-				<assertions precondition="true" postcondition="true" check="true"/>
+			<option>
+				<assertions precondition="true" postcondition="true" check="true" invariant="true"/>
 			</option>
 		</library>
+		<library name="testing" location="$ISE_LIBRARY\library\testing\testing.ecf"/>
 		<cluster name="demo" location=".\">
 			<description>This cluster holds classes for testing the graphs cluster.</description>
-			<option cat_call_detection="none" is_obsolete_routine_type="true">
+			<option is_obsolete_routine_type="false">
 				<assertions precondition="true" postcondition="true" check="true" invariant="true" loop="true"/>
 			</option>
 			<file_rule>
 				<exclude>/\.svn</exclude>
 			</file_rule>
 		</cluster>
+		<cluster name="tests" location="..\..\jj_graphs\tests\"/>
+		<override name="override" location="..\..\jj_graphs\tests\override\" recursive="true"/>
 	</target>
 </system>

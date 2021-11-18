@@ -2,12 +2,10 @@ note
 	description: "[
 			A {GRAPH} whose edges are marked with data of type L.
 			]"
-	author: "Jimmy J. Johnson"
-	license: "Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: jjj $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/graphs_618/trunk/graphs/interface/containers/labeled_graph.e $"
-	date:		"$Date: 2012-07-05 00:31:27 -0400 (Thu, 05 Jul 2012) $"
-	revision:	"$Revision: 13 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	LABELED_GRAPH [L]
@@ -23,7 +21,7 @@ inherit
 
 create
 	default_create
-	
+
 feature -- Access
 
 	iterator: LABELED_GRAPH_ITERATOR [L]
@@ -90,40 +88,22 @@ feature -- Query
 			e: like edge_anchor
 		do
 			from i := 1
-			until i > edges.count
+			until i > edges_imp.count
 			loop
-				e := edges.i_th (i)
+				e := edges_imp.i_th (i)
 				if object_comparison then
 					if equal (e.label, a_label) then
 						Result := True
-						found_edge_ref.set_edge (e)
+						last_new_edge := e
 					end
 				else
 					if a_label = e.label then
 						Result := True
-						found_edge_ref.set_edge (e)
+						last_new_edge := e
 					end
 				end
 				i := i + 1
 			end
-		end
-
-feature {NONE} -- Implementation
-
-	last_found_edge: like edge_anchor
-			-- The last edge found with a call to `has'
-		require
-			found_edge_ref_has_edge: found_edge_ref.edge /= Void
-		do
-			check attached {like edge_anchor} found_edge_ref.edge as e then
-				Result := e
-			end
-		end
-
-	found_edge_ref: EDGE_REF
-			-- Holds the edge that was found by the last call to `has'
-		once
-			create Result
 		end
 
 feature {NONE} -- Anchors (for covariant redefinitions)

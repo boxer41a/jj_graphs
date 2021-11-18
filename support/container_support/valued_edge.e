@@ -3,12 +3,10 @@ note
 			An {EDGE} connecting nodes in a {GRAPH}.  The nodes
 			connected by this type edge contain data of type V.
 			]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2012, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/support/container_support/valued_edge.e $"
-	date:		"$Date: 2012-07-05 09:08:33 -0400 (Thu, 05 Jul 2012) $"
-	revision:	"$Revision: 6 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	VALUED_EDGE [V]

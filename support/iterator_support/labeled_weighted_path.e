@@ -11,12 +11,15 @@ note
 	revision:	"$Revision: 24 $"
 
 class
-	LABELED_WEIGHTED_PATH [E, C -> NUMERIC create default_create end]
+	LABELED_WEIGHTED_PATH [E, C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
 	LABELED_PATH [E]
 		undefine
+			recomputed_cost,
 			is_less
 		redefine
 			node_anchor,
@@ -30,6 +33,7 @@ inherit
 		end
 
 create
+	default_create,
 	make
 
 feature {NONE} -- Anchors (for covariant redefinitions)

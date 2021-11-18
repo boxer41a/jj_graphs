@@ -2,12 +2,10 @@ note
 	description: "[
 		Iterator for a {LABELED_TREE}
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2014, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	LABELED_TREE_ITERATOR [L]
@@ -23,8 +21,6 @@ inherit
 		end
 
 	LABELED_GRAPH_ITERATOR [L]
-		undefine
-			path_anchor	-- fix me
 		redefine
 			graph_anchor,
 			node_anchor,
@@ -34,7 +30,7 @@ inherit
 
 create
 	make
-	
+
 feature {NONE} -- Anchors (for covariant redefinitions)
 
 	graph_anchor: LABELED_TREE [L]

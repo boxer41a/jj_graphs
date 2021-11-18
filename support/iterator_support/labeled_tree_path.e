@@ -28,8 +28,9 @@ inherit
 		end
 
 create
+	default_create,
 	make
-	
+
 feature {NONE} -- Anchors (for covariant redefinitions)
 
 	node_anchor: LABELED_TREE_NODE [L]

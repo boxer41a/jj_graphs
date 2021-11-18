@@ -10,8 +10,16 @@ note
 	date:		"$Date: 2013-01-13 08:58:55 -0500 (Sun, 13 Jan 2013) $"
 	revision:	"$Revision: 9 $"
 
-class
+deferred class
 	TRAVERSAL_POLICIES
+
+feature -- Initializetion
+
+	initialize_traversal
+			-- Perform requred initialization, if any, when
+			-- a traversal method changes.
+		deferred
+		end
 
 feature -- Traversal policies
 
@@ -199,12 +207,17 @@ feature -- Traversal policy status report
 
 feature -- Traversal methods
 
-	set_alphabetical
-			-- Make Current traverse the graph in alphabetical order.
+	set_shortest_first
+			-- Make Current traverse the graph in alphabetical order,
+			-- following the shortest paths first.
+			-- Results of previous traversals are lost.
 		do
-			traversal_method := Alpha_beta
+			if traversal_method /= Shortest_first then
+				initialize_traversal
+			end
+			traversal_method := Shortest_first
 		ensure
-			sorting_alphabetically: traversal_method = Alpha_beta
+			sorting_shortest_first: traversal_method = Shortest_first
 		end
 
 	set_breadth_first
@@ -220,6 +233,9 @@ feature -- Traversal methods
 			--      /|     |\
 			--     9 10   11 12
 		do
+			if traversal_method = Shortest_first then
+				initialize_traversal
+			end
 			traversal_method := Breadth_first
 		ensure
 			sorting_breadth_first: traversal_method = Breadth_first
@@ -238,6 +254,9 @@ feature -- Traversal methods
 			--      /|     |\
 			--     4 5    10 11
 		do
+			if traversal_method = Shortest_first then
+				initialize_traversal
+			end
 			traversal_method := Depth_first
 		ensure
 			sorting_depth_first: traversal_method = Depth_first
@@ -253,6 +272,9 @@ feature -- Traversal methods
 			--      /|     |\
 			--     4 5    10 11
 		do
+			if traversal_method = Shortest_first then
+				initialize_traversal
+			end
 			traversal_method := Pre_order
 		ensure
 			sorting_pre_order: traversal_method = Pre_order
@@ -269,6 +291,9 @@ feature -- Traversal methods
 			--      /|     |\
 			--     1 2     7 8
 		do
+			if traversal_method = Shortest_first then
+				initialize_traversal
+			end
 			traversal_method := Post_order
 		ensure
 			sorting_post_order: traversal_method = Post_order
@@ -287,6 +312,9 @@ feature -- Traversal methods
 			--      /|     |\
 			--     1 3     8 10
 		do
+			if traversal_method = Shortest_first then
+				initialize_traversal
+			end
 			traversal_method := In_order
 		ensure
 			sorting_in_order: traversal_method = In_order
@@ -305,6 +333,9 @@ feature -- Traversal methods
 			--      /|      |\
 			--     1 2      3 4
 		do
+			if traversal_method = Shortest_first then
+				initialize_traversal
+			end
 			traversal_method := Bottom_up
 		end
 
@@ -319,6 +350,9 @@ feature -- Traversal methods
 			--      /|     |\
 			--     1 2     5 6
 		do
+			if traversal_method = Shortest_first then
+				initialize_traversal
+			end
 			traversal_method := Leaf_first
 		end
 
@@ -328,28 +362,24 @@ feature -- Traversal methods
 			-- but visit only the leaf nodes, no internal nodes.
 			--           x
 			--          /|\
-			--		   x x x
+			--		   x 4 x
 			--		  /|   |\
-			--       x 3   x 6
+			--       x 3   x 7
 			--      /|     |\
-			--     1 2     4 5
+			--     1 2     5 6
 		do
+			if traversal_method = Shortest_first then
+				initialize_traversal
+			end
 			traversal_method := Leaves_only
-		end
-
-	set_shortest_first
-			-- Make Current traverse the graph by proceding along the edges from the
-			-- last shortest path.
-		do
-			traversal_method := Shortest_first
 		end
 
 feature -- Traversal method status report
 
-	is_alphabetical: BOOLEAN
+	is_shortest_first: BOOLEAN
 			-- Is `traversal_method' set to `Shortest_first'?
 		do
-			Result := traversal_method = Alpha_beta
+			Result := traversal_method = Shortest_first
 		end
 
 	is_breadth_first: BOOLEAN
@@ -400,18 +430,12 @@ feature -- Traversal method status report
 			Result := traversal_method = Leaves_only
 		end
 
-	is_shortest_first: BOOLEAN
-			-- Is `traversal_method' set to `Shortest_first'?
-		do
-			Result := traversal_method = Shortest_first
-		end
-
 feature {NONE} -- Implementation (constants)
 
 	Default_size: INTEGER = 100
 			-- Used to initialize the size of `traversed_edges'.
 
-	Alpha_beta: INTEGER = 1
+	Shortest_first: INTEGER = 1
 	Breadth_first: INTEGER = 2
 	Depth_first: INTEGER = 3
 	Pre_order: INTEGER = 4
@@ -420,15 +444,19 @@ feature {NONE} -- Implementation (constants)
 	Leaf_first: INTEGER = 7
 	Bottom_up: INTEGER = 8
 	Leaves_only: INTEGER = 9
-	Shortest_first: INTEGER = 10
 
 	last_traversal_method: INTEGER
 			-- The last of the above constants.
 		do
-			Result := Shortest_first
+			Result := Leaves_only
 		end
 
 	traversal_method: INTEGER
 			-- How the graph is to be traversed.end
+
+invariant
+
+	traversal_method_large_enough: traversal_method >= Shortest_first
+	traversal_method_small_enough: traversal_method <= last_traversal_method
 
 end

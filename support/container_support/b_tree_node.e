@@ -2,12 +2,10 @@ note
 	description: "[
 		A node in a {B_TREE} which holds items of type G.
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2012, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	B_TREE_NODE [G -> COMPARABLE]
@@ -20,7 +18,7 @@ inherit
 		redefine
 			make_with_order,
 			make_with_graph,
-			make_out_edges,
+--			make_out_edges,
 			wipe_out,
 			is_empty,
 			is_less,

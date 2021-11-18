@@ -2,17 +2,15 @@ note
 	description: "[
 		Iterator for a {VALUED_GRAPH}
 		]"
-	date: "18 Apr 08"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2009, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	WEIGHTED_GRAPH_ITERATOR [C -> NUMERIC create default_create end]
+	WEIGHTED_GRAPH_ITERATOR [C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
@@ -32,9 +30,8 @@ feature -- Access
 	cost: C
 			-- The `cost' in the last traversed edge.
 		require
-			not_alpha_beta_sorted: not is_alphabetical
 			not_off: not is_off
-			not_at_root: not is_at_root
+			not_at_root: not is_at_root  -- this is not right
 		do
 			Result := edge.cost
 		end

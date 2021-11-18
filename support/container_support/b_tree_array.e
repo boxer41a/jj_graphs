@@ -1,12 +1,13 @@
 note
 	description: "[
 		A {JJ_SORTABLE_FIXED_ARRAY} intended for use in a {B_TREE}, holding
-		a nodes values in sorted order, with the added benefit that it is
+		a node's values in sorted order, with the added benefit that it is
 		a COMPARABLE.
 		]"
-	author: ""
-	date: "$Date$"
-	revision: "$Revision$"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	B_TREE_ARRAY [G -> COMPARABLE]
@@ -24,7 +25,7 @@ inherit
 create
 	make,
 	make_filled
-	
+
 feature -- Comparison
 
 	is_less alias "<" (other: like Current): BOOLEAN

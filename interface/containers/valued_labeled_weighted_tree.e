@@ -3,22 +3,19 @@ note
 		A {JJ_TREE} whose nodes contains values of type V and whose
 		edges contain labels of type L and costs of type C.
 		]"
-	author:		"Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/interface/containers/valued_labeled_weighted_tree.e $"
-	date:		"$Date: 2014-06-08 19:44:14 -0400 (Sun, 08 Jun 2014) $"
-	revision:	"$Revision: 24 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	VALUED_LABELED_WEIGHTED_TREE [V, L, C -> NUMERIC create default_create end]
+	VALUED_LABELED_WEIGHTED_TREE [V, L, C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
 	VALUED_LABELED_TREE [V, L]
-		undefine
-			last_found_edge,
-			found_edge_ref
 		redefine
 			iterator,
 			node_anchor,
@@ -26,9 +23,6 @@ inherit
 		end
 
 	VALUED_WEIGHTED_TREE [V, C]
-		undefine
-			last_found_edge,
-			found_edge_ref
 		redefine
 			iterator,
 			node_anchor,
@@ -36,9 +30,6 @@ inherit
 		end
 
 	LABELED_WEIGHTED_TREE [L, C]
-		undefine
-			last_found_edge,
-			found_edge_ref
 		redefine
 			iterator,
 			node_anchor,

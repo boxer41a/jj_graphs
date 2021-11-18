@@ -3,15 +3,15 @@ note
 			A {GRAPH} where each node contain NO data and each
 			edge has a `label' and a `cost'
 			]"
-	author:		"Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	LABELED_WEIGHTED_GRAPH [L, C -> NUMERIC create default_create end]
+	LABELED_WEIGHTED_GRAPH [L, C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
@@ -29,8 +29,6 @@ inherit
 			has as has_cost
 		undefine
 			iterator,
-			last_found_edge,
-			found_edge_ref,
 			node_anchor,
 			edge_anchor
 		end

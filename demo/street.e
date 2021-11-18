@@ -2,13 +2,10 @@ note
 	description: "[
 			Type with which to test the graphs cluster.
 			]"
-	author: "Jimmy J. Johnson"
-	license: "Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/demo/street.e $"
-	date:		"$Date: 2012-07-05 09:08:33 -0400 (Thu, 05 Jul 2012) $"
-	revision:	"$Revision: 6 $"
-
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	STREET

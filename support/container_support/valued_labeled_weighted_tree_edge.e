@@ -3,15 +3,15 @@ note
 		An {EDGE} connecting two nodes where the nodes contain a `value'.
 		The edge is marked with a `label' and has a `cost'.
 		]"
-	author:		"Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	VALUED_LABELED_WEIGHTED_TREE_EDGE [V, L, C -> NUMERIC create default_create end]
+	VALUED_LABELED_WEIGHTED_TREE_EDGE [V, L, C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
@@ -21,6 +21,7 @@ inherit
 		undefine
 			default_create,
 			make_with_label,
+			cost,
 			is_equal,
 			is_less,
 			check_nodes

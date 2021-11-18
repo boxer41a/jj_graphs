@@ -1,101 +1,105 @@
 note
 	description: "[
-		An ordered colection of edges beginning at a `start_node'.
+		An ordered collection of edges beginning at a `start_node'.
 		Edges can only be added and	removed from the end.
 		This is to be used with a {GRAPH}.
 		]"
 	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2009, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/support/iterator_support/walk.e $"
-	date:		"$Date: 2014-06-08 19:44:14 -0400 (Sun, 08 Jun 2014) $"
-	revision:	"$Revision: 24 $"
+	date:		"8/21/1"
 
 class
 	WALK
 
 inherit
 
-	COMPARABLE
-		redefine
-			copy	-- Required (called by `twin')
+	SHARED
+		undefine
+			default_create,
+			is_equal,
+			copy
 		end
 
-			-- A LINKED_STACK inserts items in reverse order which is
-			-- not intuitive to a client of path who may want to explore
-			-- the edges in the path from start to finish.
+	HASHABLE
+		undefine
+			is_equal,
+			copy
+		redefine
+			default_create
+		end
 
---	JJ_ARRAYED_STACK [EDGE]		-- JJ_LINKED_STACK [EDGE]
---		rename
---			item as edge,
---			make as list_make
---		export
---			{NONE}
---				list_make,
---				compare_objects,
---				compare_references,
---				append,
---				put,
---				replace
---			{PATH}
---				area,
---				subarray
---			{GRAPH_ITERATOR}
---				remove
---			{ANY}
---				before
---		undefine
---			is_equal
---		redefine
---			default_create,
---			edge,
---			copy,
-----			is_equal,
---			extend,
---			force,
---			append,
---			duplicate,
---			wipe_out
---		end
+	COMPARABLE
+		redefine
+			default_create,
+			copy	,			-- Required (called by `twin')
+			is_equal
+		end
 
 create
+	default_create,
 	make
 
 feature {NONE} -- Initialization
 
+	default_create
+			-- Create an instance that `is_empty'
+		do
+			hash_code := uuid_generator.generate_uuid.hash_code
+			create path_imp.make (Default_size)
+--			create explorers.make (1)
+		ensure then
+			is_empty: is_empty
+		end
+
 	make (a_node: like node_anchor)
-			-- Create an instance
+			-- Create an instance where `first_node' is `a_node'
+			-- and having zero edges.
 		require
 			node_exists: a_node /= Void
 		do
-			create path_imp.make (Default_size)
-			first_node := a_node
+			default_create
+			set_first_node (a_node)
 		ensure
+			not_empty: not is_empty
 			first_node_set: first_node = a_node
 		end
 
 feature -- Access
 
-	edge: like edge_anchor
-			-- The edge at the current position
-		require
-			not_empty: not is_empty
-			not_off: not is_off
+	hash_code: INTEGER
+			-- Assigned in `default_create
+
+	frozen cost: like cost_imp
+			-- The price of exploring Current
+			-- The default returns the number of edges
+			-- Redefine `recompute_cost' assigning result to `cost_imp'
+			-- to change symantics of this feature.
 		do
-			Result := path_imp.item
+				-- Memoize the calculation
+			if is_dirty then
+				Result := recomputed_cost
+				set_clean
+			else
+				Result := cost_imp
+			end
 		end
 
 	last_edge: like edge_anchor
 			-- The last edge.
 		require
-			not_empty: not is_empty
+			has_edges: edge_count >= 1
 		do
 			Result := path_imp.last
 		end
 
 	first_node: like node_anchor
 			-- Node at which this path starts.
+		require
+			not_empty: not is_empty
+		do
+			check attached first_node_imp as n then
+				Result := n
+			end
+		end
 
 	last_node: like node_anchor
 			-- The last node in the path.
@@ -113,7 +117,6 @@ feature -- Access
 			i: INTEGER
 
 			e, prev_e: detachable like edge_anchor
-			n: detachable like node_anchor
 		do
 			if a_index = 1 then
 				Result := first_node
@@ -136,7 +139,7 @@ feature -- Access
 	i_th_edge (a_index: INTEGER): like edge_anchor
 			-- Get the i-th edge in the path
 		require
-			not_empty: not is_empty
+			not_empty: edge_count >= 1
 			valid_index: is_valid_edge_index (a_index)
 		do
 			Result := path_imp.i_th (a_index)
@@ -174,14 +177,19 @@ feature -- Status report
 	is_empty: BOOLEAN
 			-- Are there no edges in Current?
 		do
-			Result := path_imp.is_empty
+			Result := not attached first_node_imp
+		ensure
+			empty_implication: Result implies not attached first_node_imp
+			no_node_implication: Result implies path_imp.is_empty
 		end
 
-	is_off: BOOLEAN
-			-- Is the cursor off the list?
-		do
-			Result := path_imp.off
-		end
+	is_dirty: BOOLEAN
+			-- Has Current changed since the `cost' was last calculated? 	
+
+	is_invalid: BOOLEAN
+			-- Has Current been mark as not usable?
+			-- Happens if notified by an {EDGE} that the edge no
+			-- longer connected to two nodes.
 
 	is_node_cyclic: BOOLEAN
 			-- Does Current contain a cycle where a node is visited
@@ -323,6 +331,29 @@ end
 			io.new_line
 		end
 
+feature -- Status setting
+
+	set_dirty
+			-- Mark Current as dirty, so the `cost' can be
+			-- recalculated if necessary.
+		do
+			is_dirty := true
+		end
+
+	set_clean
+			-- Mark Current as not `is_dirty'
+		do
+			is_dirty := false
+		end
+
+	set_invalid
+			-- Mark Current as not usable.
+			-- Set when an edge is disconnected
+			-- Once `is_invalid' Current cannot be set valid again.
+		do
+			is_invalid := true
+		end
+
 feature -- Query
 
 	is_valid_node_index (a_index: INTEGER): BOOLEAN
@@ -384,7 +415,7 @@ feature -- Query
 		do
 			if a_node = first_node then
 				Result := True
-			elseif not is_empty then
+			else
 				from i := 1
 				until Result or else i > edge_count
 				loop
@@ -394,10 +425,18 @@ feature -- Query
 				end
 			end
 		end
+
+--	was_explored_by (a_iterator: like iterator_anchor): BOOLEAN
+--			-- Has Current been explored by `a_iterator'?
+--		do
+--			Result := attached explorers.item (a_iterator.hash_code) as w and then
+--					 attached w.item
+--		end
+
 feature -- Measurement
 
 	node_count: INTEGER
-			-- The number of times nodes are visited along path
+			-- The number of node visits along path
 			-- (A node could be visited more than once.)
 		do
 			Result := path_imp.count + 1
@@ -414,15 +453,17 @@ feature -- Measurement
 feature -- Element change
 
 	set_first_node (a_node: like node_anchor)
-			-- Change the first node.
-			-- Also removes any edges from the list, because the edges must
+			-- Change the `first node' and remove all edges.
+			-- Removes any edges from the list, because the edges must
 			-- progress in order and there is no guarantee that `a_node'
 			-- has a connection to the first one in the list.
-		require
-			node_exists: a_node /= Void
 		do
 			path_imp.wipe_out
-			first_node := a_node
+			first_node_imp := a_node
+			set_dirty
+		ensure
+			first_node_assigned: first_node = a_node
+			has_no_edges: edge_count = 0
 		end
 
 	extend (a_edge: like edge_anchor)
@@ -430,25 +471,11 @@ feature -- Element change
 		require
 			valid_edge: is_valid_edge (a_edge)
 		do
---			check
---				valid_edge: is_valid_edge (a_edge)
---					-- This check added because could not stregthen the precondition.
---			end
---			Precursor {JJ_ARRAYED_STACK} (a_edge)
 			path_imp.extend (a_edge)
-		end
-
-	force (a_edge: like edge_anchor)
-			-- Add `a_edge' to the end of the path.
-			-- Same as `extend'.
-		require
-			valid_edge: is_valid_edge (a_edge)
-		do
---			check
---				valid_edge: is_valid_edge (a_edge)
---					-- This check added because could not stregthen the precondition.
---			end
-			extend (a_edge)
+			if not a_edge.is_in_path (Current) then
+				a_edge.join_path (Current)
+			end
+			set_dirty
 		end
 
 --	append (other: like Current) is
@@ -466,7 +493,7 @@ feature -- Element change
 	remove
 			-- Remove the last edge for the path
 		require
-			not_empty: not is_empty
+			not_empty: edge_count >= 1
 		do
 			path_imp.remove
 		end
@@ -484,7 +511,7 @@ feature -- Duplication
 			-- to `other', so as to yield equal objects.
 			-- Redefined to make slightly more than a copy, but less than deep_copy.
 			-- Simular to {STRING}.copy, because this feature copies the list elements
-			-- but no ta deep copy of those list elements.
+			-- but not a deep copy of those list elements.
 		local
 			i: INTEGER
 		do
@@ -495,22 +522,58 @@ feature -- Duplication
 				extend (other.i_th_edge (i))
 				i := i + 1
 			end
+			if other.is_invalid then
+				set_invalid
+			end
 		end
 
---	duplicate (n: INTEGER): like Current
---			-- New path containing the `n' latest items inserted in current.
---			-- If `n' is greater than `count', identical to current.
---		do
---			Result := Precursor {JJ_ARRAYED_STACK} (n)
---			Result.set_first_node (first_node)
---		end
-
 feature -- Comparison
+
+	is_equal (other: like Current): BOOLEAN
+			-- Redefined to follow `copy'
+		do
+			if other = Current then
+				Result := True
+			else
+				Result := first_node = other.first_node and
+						path_imp ~ other.path_imp and
+						is_invalid = other.is_invalid
+			end
+		end
 
 	is_less alias "<" (other: like Current): BOOLEAN
 			-- Is current object less than `other'?
 			-- True if number of edges less than other.  If equal then
 			-- check each node in the path.
+		do
+			if is_empty and other.is_empty then
+				Result := false
+			elseif is_empty and not other.is_empty then
+				Result := false
+			elseif not is_empty and other.is_empty then
+				Result := true
+			elseif attached {COMPARABLE} cost as c and attached {COMPARABLE} other.cost as oc then
+				if c ~ oc then
+					Result := check_nodes (other)
+				else
+					Result := c < oc
+				end
+			else
+				Result := check_nodes (other)
+			end
+		end
+
+	check_nodes (other: like Current): BOOLEAN
+			-- Called by `is_less' when the `cost' of Current or
+			-- `other' are not {COMPARABLE} in which case this
+			-- feature compares the nodes at each end of Current.
+		require
+			not_empty: not is_empty
+			other_not_empty: not other.is_empty
+			not_comparables: (attached {COMPARABLE} cost as c and then
+							attached {COMPARABLE} other.cost as oc and then c ~ oc) or else
+							(not attached {COMPARABLE} cost or
+							not attached {COMPARABLE} other.cost)
 		local
 			e1: like edge_anchor
 			e2: like edge_anchor
@@ -543,10 +606,48 @@ feature -- Comparison
 			end
 		end
 
+feature {GRAPH_ITERATOR} -- Implementation
+
+--	explorers: HASH_TABLE [WEAK_REFERENCE [like iterator_anchor], INTEGER]
+--			-- Iterators that have explored Current
+
+--	explore_by (a_iterator: like iterator_anchor)
+--			-- Have Current record that it has been explored by `a_iterator'
+--		local
+--			w: WEAK_REFERENCE [like iterator_anchor]
+--		do
+--			create w.put (a_iterator)
+--			explorers.extend (w, a_iterator.hash_code)
+--		ensure
+--			was_explored: was_explored_by (a_iterator)
+--			referential_integrity: a_iterator.was_path_explored (Current)
+--		end
+
+--	unexplore_by (a_iterator: like iterator_anchor)
+--			-- Remove `a_iterator' from `explorers'
+--			-- Also clean Void references from the table.
+--		do
+--			explorers.remove (a_iterator.hash_code)
+--		ensure
+--			not_has_key: not explorers.has_key (a_iterator.hash_code)
+--			not_was_explored: not was_explored_by (a_iterator)
+--			referential_integrity: not a_iterator.is_unstable implies
+--										not a_iterator.was_path_explored (Current)
+--		end
+
+feature {WALK} -- Implementation
+
+	path_imp: JJ_ARRAYED_STACK [like edge_anchor]
+			-- Implementation holding the edges in this path
+			-- Selectively exported to {WALK} for `is_equal'.
+
 feature {NONE} -- Implementation
 
 	Default_size: INTEGER = 10
 			-- Default number of edges a path can hold.
+
+	first_node_imp: detachable like node_anchor
+			-- Implementation for the `first_node'
 
 	has_inconsistent_edge: BOOLEAN
 			-- Does current have an edge that does not connect in the proper
@@ -564,8 +665,20 @@ feature {NONE} -- Implementation
 			end
 		end
 
-	path_imp: JJ_ARRAYED_STACK [like edge_anchor]
-			-- Implementation holding the edges in this path
+	recomputed_cost: NUMERIC
+			-- Calculate the `cost', memoizing the result
+			-- in `cost_imp'.
+		do
+			Result := edge_count
+			cost_imp := Result
+		end
+
+	cost_imp: like recomputed_cost
+			-- Holds the cost calculated in `recompute_cost'
+			-- and anchor for `cost'
+		attribute
+			Result := recomputed_cost
+		end
 
 feature {NONE} -- Anchors (for covariant redefinitions)
 
@@ -593,6 +706,19 @@ feature {NONE} -- Anchors (for covariant redefinitions)
 			end
 		ensure then
 			void_result: Result = Void
+		end
+
+	iterator_anchor: GRAPH_ITERATOR
+			-- Anchor for features using iterators.
+			-- Not to be called; just used to anchor types.
+			-- Declared as a feature to avoid adding an attribute.
+		require
+			not_callable: False
+		do
+			check
+				do_not_call: False then
+					-- Because gives no info; simply used as anchor.
+			end
 		end
 
 invariant

@@ -3,15 +3,15 @@ note
 			A {GRAPH} where each node contains a `value' and
 			each edge can have a `cost'.
 			]"
-	author:		"Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	VALUED_WEIGHTED_GRAPH [V, C -> NUMERIC create default_create end]
+	VALUED_WEIGHTED_GRAPH [V, C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 

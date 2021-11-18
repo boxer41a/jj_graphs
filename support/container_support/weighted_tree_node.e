@@ -2,16 +2,15 @@ note
 	description: "[
 		An node that can be used in a {WEIGHTED_TREE}
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2014, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	WEIGHTED_TREE_NODE [C -> NUMERIC create default_create end]
+	WEIGHTED_TREE_NODE [C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
@@ -19,7 +18,6 @@ inherit
 		undefine
 			make_with_order
 		redefine
-			make_with_order,
 			graph_anchor,
 			node_anchor,
 			edge_anchor,
@@ -36,7 +34,7 @@ inherit
 
 create
 	default_create,		-- Same as {TREE_NODE} because the label only
-	make_with_order,	-- applies to edges not the node
+	make_with_order,		-- applies to edges not the node
 	make_with_graph
 
 feature {NONE} -- Anchors (for covariant redefinitions)

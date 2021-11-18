@@ -2,28 +2,24 @@ note
 	description: "[
 		Root class for nodes used in graphs and trees.
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2014, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/support/container_support/node.e $"
-	date:		"$Date: 2014-08-18 22:48:48 -0400 (Mon, 18 Aug 2014) $"
-	revision:	"$Revision: 25 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	NODE
 
 inherit
 
-	IDENTIFIED			-- `object_id' used by {GRAPH_ITERATOR}.`shortest_paths'
+	SHARED
 		undefine
+			default_create,
 			is_equal,
 			copy
-		redefine
-			default_create
 		end
 
-	HASHABLE			-- Used in conjuction with {IDENTIFIED}.`object_id' above
+	HASHABLE
 		undefine
 			is_equal,
 			copy
@@ -38,7 +34,7 @@ inherit
 
 	CONTAINER [EDGE]
 			-- A node inherits container properties but is implemented
-			-- using a client relation through feature `edges'.
+			-- using a client relation through feature `edges_imp'.
 		rename
 			has as has_edge,
 			linear_representation as connections
@@ -72,6 +68,7 @@ feature {NONE} -- Initialization
 		require
 			order_big_enough: a_order >= 5
 		do
+			hash_code := uuid_generator.generate_uuid.hash_code
 			internal_node_order := a_order
 			create visitors.make (1)
 			create in_edges.make (a_order)
@@ -80,7 +77,6 @@ feature {NONE} -- Initialization
 		ensure
 			order_set: internal_node_order = a_order
 			out_edges_void_until_needed: out_edges = Void
-			assume_one_iterator: visitors.capacity = 1
 		end
 
 	make_with_graph (a_graph: like graph_anchor)
@@ -92,7 +88,6 @@ feature {NONE} -- Initialization
 			join_graph (a_graph)
 		ensure
 			out_edges_void_until_needed: out_edges = Void	-- ?
-			assume_one_iterator: visitors.capacity = 1
 			in_capacity_dictated_by_graph: in_edges.capacity >= a_graph.initial_in_capacity
 		end
 
@@ -104,10 +99,7 @@ feature -- Access
 			-- Set by `make_with_order'
 
 	hash_code: INTEGER
-			-- Hash code value
-		do
-			Result := object_id
-		end
+			-- Hash code value assigned in `make_with_order' from {RANDOM}
 
 feature -- Access
 
@@ -409,21 +401,26 @@ feature -- Access
 			end
 		end
 
+	last_new_edge: like edge_anchor
+			-- Last edge that was created when two nodes were connected.
+			-- This is a convenience so a connection can be made followed
+			-- by manipulation of the new edge.
+			attribute
+				create Result
+			end
+
 feature -- Basic operations
 
 	adopt (a_child: like node_anchor)
 			-- Add a connection (EDGE) from Current to `a_child'.
 		require
-			child_exists: a_child /= Void
 			can_adopt: can_adopt (a_child)
 		local
 			b: BOOLEAN
 		do
-			io.put_string ("Enter NODE.adopt %N")
 			b := mark_unstable (true)
 			new_edge.connect (Current, a_child)
 			b := mark_unstable (b)
-			io.put_string ("Exit NODE.adopt %N")
 		ensure
 			mark_unchanged: is_marked_unstable = old is_marked_unstable
 			connection_exists: has_node (a_child)
@@ -659,14 +656,6 @@ feature -- Status report
 	is_ordered: BOOLEAN
 			-- Are edges being inserted in order?
 
-	was_visited_by (a_iterator: like iterator_anchor): BOOLEAN
-			-- Has Current been visited by `a_iterator'?
-		require
-			iterator_exists: a_iterator /= Void
-		do
-			Result := visitors.has (a_iterator)
-		end
-
 	is_unstable: BOOLEAN
 			-- Is Current in an unstable state were some invariants do not hold?
 			-- This occurs during connection and disconnection of contained edges.
@@ -683,31 +672,27 @@ feature -- Status setting
 
 	join_graph (a_graph: like graph_anchor)
 			-- Ensure Current is in `a_graph'
-		require
-			graph_exists: a_graph /= Void
 		do
-			if not graphs.has (a_graph.object_id) then
-				graphs.extend (a_graph, a_graph.object_id)
+			if not graphs.has (a_graph) then
+				graphs.extend (a_graph, a_graph)
 			end
 			if not a_graph.has_node (Current) then
 				a_graph.extend_node (Current)
 			end
 		ensure
-			joined_graph: graphs.has (a_graph.object_id)
+			joined_graph: graphs.has (a_graph)
 			graph_has_node: a_graph.has_node (Current)
 		end
 
-	prune_graph (a_graph: like graph_anchor)
+	leave_graph (a_graph: like graph_anchor)
 			-- Ensure Current is not in `a_graph'
-		require
-			graph_exists: a_graph /= Void
 		do
+			graphs.remove (a_graph)
 			if a_graph.has_node (Current) then
 				a_graph.prune_node (Current)
 			end
-			graphs.remove (a_graph.object_id)
 		ensure
-			not_has_graph: not graphs.has (a_graph.object_id)
+			not_has_graph: not graphs.has (a_graph)
 			not_graph_has_node: not a_graph.has_node (Current)
 		end
 
@@ -740,7 +725,8 @@ feature -- Status setting
 		end
 
 	mark_unstable (a_mark: BOOLEAN): BOOLEAN
-			-- Set `is_unstable' to `a_mark', returning the old value
+			-- Set `is_unstable' to `a_mark', returning the old value.
+			-- Used to relax invariant checking when node is in flux.
 		do
 			Result := is_marked_unstable
 			is_marked_unstable := a_mark
@@ -912,9 +898,18 @@ feature -- Query
 		require
 			graph_exists: a_graph /= Void
 		do
-			Result := graphs.has (a_graph.object_id)
+			Result := graphs.has (a_graph)
 		ensure
 			Result implies a_graph.has_node (Current)
+		end
+
+	was_visited_by (a_iterator: like iterator_anchor): BOOLEAN
+			-- Has Current been visited by `a_iterator'?
+		require
+			iterator_exists: a_iterator /= Void
+		do
+			Result := attached visitors.item (a_iterator.hash_code) as w and then
+					 attached w.item
 		end
 
 feature -- Comparison
@@ -990,43 +985,27 @@ feature {EDGE} -- Implementation (Basic operations)
 					--and then not Current.has_edge (a_edge) -- don't need; using SETs
 		end
 
-	make_out_edges
-			-- Create `out_edges'
-		do
-			create out_edges.make (internal_node_order)
-		end
-
-	extend_out_edge (a_edge: like edge_anchor)
-			-- Ensure `a_edge' is in `out_edges'
-			-- Helper routine because `out_edges' may still be Void
-		require
-			is_extendable_edge: is_extendable_edge (a_edge)
-		do
-			if not attached out_edges then
-				make_out_edges
-			end
-			check attached out_edges as o then
-				o.extend (a_edge)
-			end
-		end
-
 	extend_edge (a_edge: like edge_anchor)
 			-- Ensure `a_edge' is in Current
 		require
 			is_extendable_edge: is_extendable_edge (a_edge)
+		local
+			b: BOOLEAN
 		do
+			b := mark_unstable (true)
 			edges.extend (a_edge)
-			if a_edge.is_directed then
-				if a_edge.originates_at (Current) then
-					extend_out_edge (a_edge)
+			if a_edge.originates_at (Current) then
+				if not attached out_edges then
+					create out_edges.make (internal_node_order)
 				end
-				if a_edge.terminates_at (Current) then
-					in_edges.extend (a_edge)
+				check attached out_edges as o then
+					o.extend (a_edge)
 				end
-			else
-				extend_out_edge (a_edge)
+			end
+			if a_edge.terminates_at (Current) then
 				in_edges.extend (a_edge)
 			end
+			b := mark_unstable (b)
 		ensure then
 			has_edge: has_edge (a_edge)
 			in_correct_set: edges.has (a_edge)
@@ -1059,61 +1038,34 @@ feature {EDGE} -- Implementation (Basic operations)
 			edge_not_connected: a_edge.is_disconnected
 		end
 
-feature {GRAPH} -- Implementation
-
-	last_new_edge: like edge_anchor
-			-- Last edge that was created when two nodes were connected.
-			-- This is a convenience so a connection can be made followed
-			-- by manipulation of the new edge.
-		do
-			check attached {like edge_anchor} edge_ref.edge as e then
-				Result := e
-			end
-		end
-
-	edge_ref: EDGE_REF
-			-- Holds a reference to the last created edge created by Current
-		once ("OBJECT")
-			create Result
-		end
-
---	remove_from_graph (a_graph: like graph_anchor)
---			-- Ensure Current is not in `a_graph'
---		local
---			b: BOOLEAN
---		do
---			b := mark_unstable (true)
---			graphs.prune (a_graph)
---			if a_graph.has_node (Current) then
---				a_graph.prune_node (Current)
---			end
---			b := mark_unstable (b)
---		ensure
---			no_graph: not is_in_graph
---			not_in_graph: not a_graph.has_node (Current)
---		end
-
 feature {NONE} -- Implementation
 
-	graphs: HASH_TABLE [like graph_anchor, INTEGER]
+	graphs: HASH_TABLE [like graph_anchor, like graph_anchor]
 			-- The graphs in which Current resides indexed
-			--  by their `object_id' (from IDENTIFIED)
+			-- by their `hash_code'
 
 	new_edge: like edge_anchor
 			-- Creates a new edge and also makes the Result available
 			-- in `last_new_edge'.
 		do
 			create Result
-			edge_ref.set_edge (Result)
+			last_new_edge := Result
 		ensure
 			last_new_edge_was_set: last_new_edge = Result
 		end
 
 feature {GRAPH_ITERATOR} -- Implementation
 
+	new_cursor: like edges.new_cursor
+			-- Effected here using feature `new_cursor' from `edges_imp', because
+			-- it is deferred in CONTAINER.  (See inheritance clause.)
+		do
+			Result := edges.new_cursor
+		end
+
 	edges: JJ_SORTABLE_SET [like edge_anchor]
 			-- The edges terminating or originating at Current
-			-- Using three sets (`edges', `in_edges', and `out_edges') for the
+			-- Using three sets (`edges_imp', `in_edges', and `out_edges') for the
 			-- edges uses more storage and slightly complicates insertions
 			-- and deletions, but other feature are greatly simplified.
 
@@ -1124,27 +1076,30 @@ feature {GRAPH_ITERATOR} -- Implementation
 			-- The edges originating at Current
 			-- Leave it Void for leaf nodes of a B-tree for example
 
-	visitors: JJ_ARRAYED_SET [like iterator_anchor]
+	visitors: HASH_TABLE [WEAK_REFERENCE [like iterator_anchor], INTEGER]
 			-- Iterators that have visited Current
 
 	visit_by (a_iterator: like iterator_anchor)
 			-- Have Current record that it has been visited by `a_iterator'
-		require
-			iterator_exists: a_iterator /= Void
+		local
+			w: WEAK_REFERENCE [like iterator_anchor]
 		do
-			visitors.extend (a_iterator)
+			create w.put (a_iterator)
+			visitors.extend (w, a_iterator.hash_code)
 		ensure
 			was_visited: was_visited_by (a_iterator)
 			referential_integrity: a_iterator.was_node_visited (Current)
 		end
 
 	unvisit_by (a_iterator: like iterator_anchor)
-			-- Ensure
-		require
-			iterator_exists: a_iterator /= Void
+			-- Remove `a_iterator' from `visitors'
+			-- Also clean Void references from the table.
+		local
+			w: WEAK_REFERENCE [like iterator_anchor]
 		do
-			visitors.prune (a_iterator)
+			visitors.remove (a_iterator.hash_code)
 		ensure
+			not_has_key: not visitors.has (a_iterator.hash_code)
 			not_was_visited: not was_visited_by (a_iterator)
 			referential_integrity: not a_iterator.is_unstable implies
 										not a_iterator.was_node_visited (Current)
@@ -1153,7 +1108,7 @@ feature {GRAPH_ITERATOR} -- Implementation
 feature {NONE} -- Anchors (for covariant redefinitions)
 
 	graph_anchor: GRAPH
-			-- Anchor for features using nodes.
+			-- Anchor for features using a graph.
 			-- Not to be called; just used to anchor types.
 			-- Declared as a feature to avoid adding an attribute.
 		require
@@ -1206,7 +1161,9 @@ feature {NONE} -- Anchors (for covariant redefinitions)
 
 invariant
 
---	graphs_compares_references: not graphs.object_comparison
+	hash_code_assigned: hash_code /= 0
+
+	graphs_compares_references: not graphs.object_comparison
 	edges_compares_references: not edges.object_comparison
 	in_edges_compares_references: not in_edges.object_comparison
 	out_edges_compares_references: attached out_edges as o implies not o.object_comparison
@@ -1214,7 +1171,7 @@ invariant
 
 --	node_graph_integrity: graphs.for_all (agent {GRAPH}.has_node (Current))
 
-	edges_connected_to_current: across edges as e all
+	referential_integrity: across edges as e all
 			(not e.item.is_unstable and not is_unstable) implies
 				e.item.has_connection (Current) end
 
@@ -1231,22 +1188,23 @@ invariant
 			(not e.item.is_unstable and not is_unstable) implies
 				edges.has (e.item) end
 
-	set_for_undirected_implication: across edges as e all
+	undirected_implication: across edges as e all
 			(not e.item.is_unstable and not is_unstable) implies
-				(in_edges.has (e.item) and attached out_edges as oe and then oe.has (e.item))
+				has_edge (e.item) and (has_in_edge (e.item) or has_out_edge (e.item))
 		end
 
-	set_for_directed_implication: across edges as e all
+	directed_implication: across edges as e all
 			(not e.item.is_unstable and not is_unstable) implies
 				(e.item.is_directed implies
-					((e.item.node_from = Current implies attached out_edges as oe and then oe.has (e.item)) and
-					(e.item.node_from /= Current implies attached out_edges as oe and then not oe.has (e.item)) and
-					(e.item.node_to = Current implies in_edges.has (e.item)) and
-					(e.item.node_to /= Current implies not in_edges.has (e.item))))
+					((e.item.node_from = Current implies attached has_out_edge (e.item)) and
+					(e.item.node_from /= Current implies attached not has_out_edge (e.item)) and
+					(e.item.node_to = Current implies has_in_edge (e.item)) and
+					(e.item.node_to /= Current implies not has_in_edge (e.item))))
 
 		end
 
-	node_iterator_integrity: across visitors as c all
-					(not c.item.is_unstable implies c.item.was_node_visited (Current)) end
+--	node_iterator_integrity: across visitors as v all
+--					(attached v.item as c implies
+--					(not c.is_unstable implies c.item.was_node_visited (Current))) end
 
 end

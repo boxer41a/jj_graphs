@@ -11,7 +11,9 @@ note
 	revision:	"$Revision: $"
 
 class
-	VALUED_WEIGHTED_TREE_PATH [V, C -> NUMERIC create default_create end]
+	VALUED_WEIGHTED_TREE_PATH [V, C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
@@ -23,6 +25,7 @@ inherit
 
 	VALUED_TREE_PATH [V]
 		undefine
+			recomputed_cost,
 			is_less
 		redefine
 			node_anchor,
@@ -36,6 +39,7 @@ inherit
 		end
 
 create
+	default_create,
 	make
 
 feature {NONE} -- Anchors (for covariant redefinitions)

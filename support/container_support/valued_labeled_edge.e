@@ -3,12 +3,10 @@ note
 		An {EDGE} connecting two nodes where each node has a `value'
 		of type V and the edge is marked with a `label' of type L.
 		]"
-	author:		"Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/support/container_support/valued_labeled_edge.e $"
-	date:		"$Date: 2013-01-13 08:58:55 -0500 (Sun, 13 Jan 2013) $"
-	revision:	"$Revision: 9 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	VALUED_LABELED_EDGE [V, L]

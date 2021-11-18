@@ -1,8 +1,11 @@
 note
-	description: "Summary description for {B_TREE_ITERATOR}."
-	author: ""
-	date: "$Date$"
-	revision: "$Revision$"
+	description: "[
+		A {GRAPH_ITERATOR} for a {B_TREE}."
+		]"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	B_TREE_ITERATOR [G -> COMPARABLE]

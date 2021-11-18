@@ -1,14 +1,13 @@
 note
 	description: "[
-		Used as nodes at the ends of a {LABELED_EDGE} for use in a {LABELED_GRAPH}.
-		The edge connecting these nodes has a `label' of type L.
+		Used as nodes at the ends of a {LABELED_EDGE} for use in a
+		{LABELED_GRAPH}.  The edge connecting these nodes has a `label' 
+		of type L.
 		]"
-	author: 	"Jimmy J. Johnson"
-	license: 	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: jjj $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/support/container_support/labeled_node.e $"
-	date:		"$Date: 2014-06-07 00:02:29 -0400 (Sat, 07 Jun 2014) $"
-	revision:	"$Revision: 22 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	LABELED_NODE [L]

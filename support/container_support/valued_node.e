@@ -2,13 +2,10 @@ note
 	description: "[
 		A {NODE} which contains a `value' for use in a {VALUED_GRAPH [V]}.
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2012, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/support/container_support/valued_node.e $"
-	date:		"$Date: 2014-08-18 22:48:48 -0400 (Mon, 18 Aug 2014) $"
-	revision:	"$Revision: 25 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	VALUED_NODE [V]
@@ -17,6 +14,7 @@ inherit
 
 	NODE
 		redefine
+--			out,
 			is_less,
 			graph_anchor,
 			node_anchor,
@@ -25,7 +23,7 @@ inherit
 		end
 
 create
-	default_create,				-- no value, default capacities from like `graph_anchor'
+	default_create,			-- no value, default capacities from like `graph_anchor'
 	make_with_order,			-- no_value, capacities from `a_order'
 	make_with_graph,			-- no value, capacities fronm `a_graph'
 	make_with_value,			-- capacities from like `graph_anchor'
@@ -69,8 +67,8 @@ feature {NONE} -- Initialization
 			value_exists: a_value /= Void
 		do
 --			make_with_value_and_order (a_value, a_graph.initial_out_capacity)
-			make_with_graph (a_graph)
 			value_imp := a_value
+			make_with_graph (a_graph)
 		ensure
 			is_in_graph: is_in_graph (a_graph)
 			graph_has_current: a_graph.has_node (Current)
@@ -79,7 +77,13 @@ feature {NONE} -- Initialization
 
 feature -- Access
 
-	value: like value_anchor
+--	out: STRING_8
+--			-- TEMPORARY
+--		do
+--			Result := value.out
+--		end
+
+	value: attached like value_anchor
 			-- The data stored in this node.
 		require
 			has_value: has_value
@@ -95,8 +99,6 @@ feature -- Element change
 
 	set_value (a_value: like value_anchor)
 			-- Change `value' to `a_value'
-		require
-			value_exists: a_value /= Void
 		do
 			value_imp := a_value
 		ensure

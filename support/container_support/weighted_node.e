@@ -3,16 +3,16 @@ note
 		Holds values as nodes for use in {JJ_WEIGHTED_GRAPH}.  The node holds
 		edges whose cost's are of type C.
 		]"
-	author: "Jimmy J. Johnson"
-	license: "Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/support/container_support/weighted_node.e $"
-	date:		"$Date: 2014-06-08 19:44:14 -0400 (Sun, 08 Jun 2014) $"
-	revision:	"$Revision: 24 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	WEIGHTED_NODE [C -> NUMERIC create default_create end]
-
+	WEIGHTED_NODE [C ->{NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
+						
 inherit
 
 	NODE

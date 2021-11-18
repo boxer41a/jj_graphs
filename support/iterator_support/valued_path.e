@@ -17,14 +17,30 @@ inherit
 
 	WALK
 		redefine
+--			out,
 			node_anchor,
 			edge_anchor
 		end
 
 create
+	default_create,
 	make
 
 feature -- Access
+
+--	out: STRING_8
+--			-- Temp
+--		local
+--			i: INTEGER
+--		do
+--			Result := first_node.out + ": "
+--			from i := 1
+--			until i > edge_count
+--			loop
+--				Result := Result + i_th_edge(i).node_from.out + "--" + i_th_edge(i).node_to.out + "  "
+--				i := i + 1
+--			end
+--		end
 
 	last_value: N
 			-- The value in the `last_node'

@@ -2,15 +2,15 @@ note
 	description: "[
 			A graph whose edges contain data of type E.
 			]"
-	author: "Jimmy J. Johnson"
-	license: "Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	WEIGHTED_GRAPH [C -> NUMERIC create default_create end]
+	WEIGHTED_GRAPH [C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
@@ -89,43 +89,23 @@ feature -- Query
 			i: INTEGER
 			e: like edge_anchor
 		do
-			if attached edges_imp as ei then
-				from i := 1
-				until i > ei.count
-				loop
-					e := ei.i_th (i)
-					if object_comparison then
-						if equal (e.cost, a_cost) then
-							Result := True
-							found_edge_ref.set_edge (e)
-						end
-					else
-						if a_cost = e.cost then
-							Result := True
-							found_edge_ref.set_edge (e)
-						end
+			from i := 1
+			until i > edges_imp.count
+			loop
+				e := edges_imp.i_th (i)
+				if object_comparison then
+					if equal (e.cost, a_cost) then
+						Result := True
+						last_new_edge := e
 					end
-					i := i + 1
+				else
+					if a_cost = e.cost then
+						Result := True
+						last_new_edge := e
+					end
 				end
+				i := i + 1
 			end
-		end
-
-feature {NONE} -- Implementation
-
-	last_found_edge: like edge_anchor
-			-- The last edge found with a call to `has'
-		require
-			edge_ref_has_a_edge: found_edge_ref.edge /= Void
-		do
-			check attached {like edge_anchor} found_edge_ref.edge as e then
-				Result := e
-			end
-		end
-
-	found_edge_ref: EDGE_REF
-			-- Holds the edge that was found by the last call to `has'
-		once
-			create Result
 		end
 
 feature {NONE} -- Anchors (for covariant redefinitions)

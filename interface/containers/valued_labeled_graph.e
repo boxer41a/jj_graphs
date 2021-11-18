@@ -3,12 +3,10 @@ note
 			A graph whose nodes contain data of type N and whose edges are
 			marked with a `label' of type E.
 			]"
-	author:		"Jimmy J. Johnson"
-	license: 	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/graphs_618/trunk/graphs/interface/containers/valued_labeled_graph.e $"
-	date:		"$Date: 2012-07-05 00:31:27 -0400 (Thu, 05 Jul 2012) $"
-	revision:	"$Revision: 13 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	VALUED_LABELED_GRAPH [V, L]

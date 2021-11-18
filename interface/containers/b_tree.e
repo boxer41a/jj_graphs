@@ -2,13 +2,10 @@ note
 	description: "[
 		Implementation of a B-tree
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2012, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	B_TREE [G -> COMPARABLE]

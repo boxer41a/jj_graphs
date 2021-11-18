@@ -1,18 +1,16 @@
 note
 	description: "[
 		A {GRAPH} that acts as a rooted tree.
-		The tree can only be built by adding onto nodes that are already in the tree.
-		In other words, the tree grows down by connecting a node as a child to a
-		node that is already in the tree or up by connecting a parent to the one root 
-		node in the tree.  Nodes or edges can be removed, which will remove all descendent
-		nodes as well.
+		The tree can only be built by adding onto nodes that are already in the
+		tree.  In other words, the tree grows down by connecting a node as a 
+		child to a node that is already in the tree or up by connecting a parent
+		to the one root 	node in the tree.  Nodes or edges can be removed, which 
+		will remove all descendent nodes as well.
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2013, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/interface/containers/jj_tree.e $"
-	date:		"$Date: 2014-06-07 00:02:29 -0400 (Sat, 07 Jun 2014) $"
-	revision:	"$Revision: 22 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	JJ_TREE
@@ -48,7 +46,7 @@ feature -- Access
 			not_empty: not is_empty
 		do
 				-- Pick any node and go up
-			from Result := nodes.i_th (1)
+			from Result := nodes_imp.i_th (1)
 			until Result.is_root
 			loop
 				check attached Result.parent as p then
@@ -85,18 +83,18 @@ feature -- Basic operations
 			if is_root (a_node) then
 				wipe_out
 			elseif has_node (a_node) then
-					nodes.prune (a_node)
+					nodes_imp.prune (a_node)
 					e_set := a_node.descendant_connections
 					from e_set.start
 					until e_set.exhausted
 					loop
 						e := e_set.item
-						nodes.prune (e.node_to)
-						nodes.prune (e.node_from)
-						edges.prune (e)
+						nodes_imp.prune (e.node_to)
+						nodes_imp.prune (e.node_from)
+						edges_imp.prune (e)
 						e_set.forth
 					end
-				edges.prune (parent_edge (a_node))
+				edges_imp.prune (parent_edge (a_node))
 			end
 		end
 
@@ -295,18 +293,18 @@ feature -- Query
 feature {NONE} -- Implementation (invariant checking)
 
 	any_node_has_two_parents: BOOLEAN
-			-- Does any node in `nodes' have more than one incoming
+			-- Does any node in `nodes_imp' have more than one incoming
 			-- edge that is visible to Current?
 			-- Should always be False
 		local
 			i, c: INTEGER
 			n: like node_anchor
 		do
-			from nodes.start
-			until nodes.exhausted or Result
+			from nodes_imp.start
+			until nodes_imp.exhausted or Result
 			loop
 				c := 0
-				n := nodes.item
+				n := nodes_imp.item
 				from i := 1
 				until i > n.in_count or Result
 				loop
@@ -316,7 +314,7 @@ feature {NONE} -- Implementation (invariant checking)
 					end
 					i := i + 1
 				end
-				nodes.forth
+				nodes_imp.forth
 			end
 		end
 
@@ -324,18 +322,18 @@ feature {NONE} -- Implementation (invariant checking)
 			-- Does Current contain a cycle?
 			-- It should not
 		local
-			ns: like nodes
+			ns: like nodes_imp
 			n: like node_anchor
 			checked: LINKED_SET [like node_anchor]
 			ancests: LINKED_SET [like node_anchor]
 		do
 			create checked.make
 			create ancests.make
-			ns := nodes
+			ns := nodes_imp
 			from ns.start
 			until ns.is_after or Result
 			loop
-				n := nodes.item
+				n := nodes_imp.item
 				if not checked.has (n) then
 					checked.extend (n)
 					from ancests.wipe_out
@@ -355,9 +353,9 @@ feature {NONE} -- Implementation (invariant checking)
 		local
 			i: INTEGER
 			c: INTEGER
-			ns: like nodes
+			ns: like nodes_imp
 		do
-			ns := nodes
+			ns := nodes_imp
 			from ns.start
 			until ns.is_after or c > 1
 			loop

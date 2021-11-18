@@ -2,12 +2,10 @@ note
 	description: "[
 		Iterator for a {LABELED_GRAPH}
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2009, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	URL: 		"$URL: file:///F:/eiffel_repositories/graphs_618/trunk/graphs/interface/iterators/labeled_graph_iterator.e $"
-	date:		"$Date: 2012-07-05 00:31:27 -0400 (Thu, 05 Jul 2012) $"
-	revision:	"$Revision: 13 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	LABELED_GRAPH_ITERATOR [L]
@@ -30,9 +28,8 @@ feature -- Access
 	label: L
 			-- The `label' in the last traversed edge.
 		require
-			not_alpha_beta_sorted: not is_alphabetical
 			not_off: not is_off
-			not_at_root: not is_at_root
+			not_at_root: not is_at_root  -- not right
 		do
 			Result := edge.label
 		end

@@ -2,12 +2,10 @@ note
 	description: "[
 			A {GRAPH} whose nodes contain data of type V.
 			]"
-	author:		"Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: jjj $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/graphs_618/trunk/graphs/interface/containers/valued_graph.e $"
-	date:		"$Date: 2012-07-05 00:31:27 -0400 (Thu, 05 Jul 2012) $"
-	revision:	"$Revision: 13 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	VALUED_GRAPH [V]
@@ -60,7 +58,7 @@ feature -- Element change
 		do
 			io.put_string ("enter VALUED_GRAPH.connect %N")
 			if has (a_value) then
-				n1 := last_found_node
+				n1 := last_node
 			else
 				create n1.make_with_value_and_graph (a_value, Current)
 				if is_ordered then
@@ -71,7 +69,7 @@ feature -- Element change
 				end
 			end
 			if has (a_other_value) then
-				n2 := last_found_node
+				n2 := last_node
 			else
 				create n2.make_with_value_and_graph (a_other_value, Current)
 				if is_ordered then
@@ -150,16 +148,14 @@ feature -- Element change
 		local
 			n: like node_anchor
 		do
-			if attached nodes_imp as ni then
-				from ni.start
-				until ni.is_after
-				loop
-					n := ni.item
-					if equal (n.value, a_value) and then has_node (n) then
-						prune_node (n)
-					end
-					ni.forth
+			from nodes_imp.start
+			until nodes_imp.is_after
+			loop
+				n := nodes_imp.item
+				if equal (n.value, a_value) and then has_node (n) then
+					prune_node (n)
 				end
+				nodes_imp.forth
 			end
 		ensure
 			not_in_Current: not has (a_value)
@@ -176,24 +172,22 @@ feature -- Query
 			n: like node_anchor
 			i: INTEGER
 		do
-			if attached nodes_imp as ni then
-				from i := 1
-				until Result or else i > ni.count
-				loop
-					n := ni.i_th (i)
-					if object_comparison then
-						if a_value ~ n.value then
-							Result := True
-							found_node_ref.set_node (n)
-						end
-					else
-						if a_value = n.value then
-							Result := True
-							found_node_ref.set_node (n)
-						end
+			from i := 1
+			until Result or else i > nodes_imp.count
+			loop
+				n := nodes_imp.i_th (i)
+				if object_comparison then
+					if a_value ~ n.value then
+						Result := True
+						last_node_imp := n
 					end
-					i := i + 1
+				else
+					if a_value = n.value then
+						Result := True
+						last_node_imp := n
+					end
 				end
+				i := i + 1
 			end
 		end
 
@@ -213,22 +207,20 @@ feature -- Query
 			n: like node_anchor
 			i: INTEGER
 		do
-			if attached nodes_imp as ni then
-				from i := 1
-				until Result /= Void or else i > ni.count
-				loop
-					n := ni.i_th (i)
-					if object_comparison then
-						if equal (a_value, n.value) then
-							Result := n
-						end
-					else
-						if a_value = n.value then
-							Result := n
-						end
+			from i := 1
+			until Result /= Void or else i > nodes_imp.count
+			loop
+				n := nodes_imp.i_th (i)
+				if object_comparison then
+					if a_value ~ n.value then
+						Result := n
 					end
-					i := i + 1
+				else
+					if a_value = n.value then
+						Result := n
+					end
 				end
+				i := i + 1
 			end
 		end
 
@@ -243,9 +235,9 @@ feature -- Query
 		do
 			Result := True
 			if has (a_value) then
-				n1 := last_found_node
+				n1 := last_node
 				if has (a_other_value) then
-					n2 := last_found_node
+					n2 := last_node
 					Result := is_connection_allowed (n1, n2)
 				end
 			end
@@ -253,24 +245,24 @@ feature -- Query
 
 feature {NONE} -- Implementation
 
-	last_found_node: like node_anchor
-			-- The last node found with a call to `has'
-		require
-			node_ref_has_a_node: found_node_ref.node /= Void
-		do
-			check attached {like node_anchor} found_node_ref.node as n then
-				Result := n
-			end
-		end
+--	last_found_node: like node_anchor
+--			-- The last node found with a call to `has'
+--		require
+--			node_ref_has_a_node: found_node_ref.node /= Void
+--		do
+--			check attached {like node_anchor} found_node_ref.node as n then
+--				Result := n
+--			end
+--		end
 
 	last_node_imp: detachable like node_anchor
 			-- When `connect' creates a new node it is placed here.
 
-	found_node_ref: NODE_REF
-			-- Holds the node that was found by the last call to `has'
-		once
-			create Result
-		end
+--	found_node_ref: NODE_REF
+--			-- Holds the node that was found by the last call to `has'
+--		once
+--			create Result
+--		end
 
 feature {NONE} -- Anchors (for covariant redefinitions)
 

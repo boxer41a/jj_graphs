@@ -3,15 +3,15 @@ note
 		An ordered collection of nodes and edges representing a
 		path through a {VALUED_LABLED_WEIGHTED_TREE}.
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2014, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	VALUED_LABELED_WEIGHTED_TREE_ITERATOR [V, L, C -> NUMERIC create default_create end]
+	VALUED_LABELED_WEIGHTED_TREE_ITERATOR [V, L, C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 

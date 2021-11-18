@@ -3,40 +3,40 @@ note
 		A path which holds edges of type {WEIGHTED_EDGE}. 
 		Each edge has a `cost' of type C.
 			]"
-	date: "27 Feb 03"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2009, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/jj_graphs/trunk/support/iterator_support/weighted_path.e $"
-	date:		"$Date: 2014-06-08 19:44:14 -0400 (Sun, 08 Jun 2014) $"
-	revision:	"$Revision: 24 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	WEIGHTED_PATH [C -> NUMERIC create default_create end]
+	WEIGHTED_PATH [C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
 	WALK
 		redefine
-			is_less,
+			recomputed_cost,
 			node_anchor,
 			edge_anchor
 		end
 
 create
+	default_create,
 	make
 
-feature -- Access
+feature {NONE} -- Implementation
 
-	cost: C
-			-- Cost to travel the entire path.
+	recomputed_cost: C
+			-- Calculate the `cost', memoizing the result
+			-- in `cost_imp'
 		local
 			i: INTEGER
 			e: like edge_anchor
 			num: like cost
 		do
-			if is_empty then
+			if edge_count = 0 then
 				create num
 				Result := num.zero
 			else
@@ -53,24 +53,7 @@ feature -- Access
 					i := i + 1
 				end
 			end
-		end
-
-feature -- Comparison
-
-	is_less alias "<" (other: like Current): BOOLEAN
-			-- Is current object less than `other'?
-			-- True if the cost of Current is less than the cost of the other.
-			-- If costs are equal then
-		do
-			if attached {COMPARABLE} cost as c and attached {COMPARABLE} other.cost as oc then
-				if c ~ oc then
-					Result := Precursor {WALK} (other)
-				else
-					Result := c < oc
-				end
-			else
-				Result := Precursor {WALK} (other)
-			end
+			cost_imp := Result
 		end
 
 feature {NONE} -- Anchors (for covariant redefinitions)

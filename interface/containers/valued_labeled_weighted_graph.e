@@ -3,15 +3,15 @@ note
 		A an {GRAPH} where each node has a `value' and each
 		edge is labeled with a `label' and has a `cost'.
 		]"
-	author:		"Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	VALUED_LABELED_WEIGHTED_GRAPH [V, L, C -> NUMERIC create default_create end]
+	VALUED_LABELED_WEIGHTED_GRAPH [V, L, C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
@@ -28,9 +28,7 @@ inherit
 
 	VALUED_WEIGHTED_GRAPH [V, C]
 		undefine
-			default_create,
-			last_found_edge,
-			found_edge_ref
+			default_create
 		redefine
 			iterator,
 			node_anchor,
@@ -39,9 +37,7 @@ inherit
 
 	LABELED_WEIGHTED_GRAPH [L, C]
 		undefine
-			default_create,
-			last_found_edge,
-			found_edge_ref
+			default_create
 		redefine
 			iterator,
 			node_anchor,

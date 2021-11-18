@@ -1,44 +1,44 @@
 note
 	description: "[
 		Graphs implemented as a container of nodes and edges.
-		
-		Nodes should normally be connected using feature `connect', but
-		connections can also be made from the NODE features or features 
-		from the EDGE classes themselves.
-		
---		Nodes/edges added to the graph using features `connect', `extend', etc.
---		will be "visible" (i.e. "in") the graph; nodes connected using the features 
---		from the NODE classes (i.e. features `adopt', etc.) will not be
---		"visible" to the graph.  This allows nodes to be manipulated directly or
---		nodes to be added to other graphs without affecting this graph.
 
-		To traverse the nodes/edges in a graph, use the {GRAPH_ITERATOR} classes
-		or better, use feature `iterator' to return an iterator of the correct type.
+		Nodes should normally be connected using feature `connect', but
+		connections can also be made from the NODE features or features
+		from the EDGE classes themselves.
+
+		Nodes/edges added to the graph using features `connect', `extend',
+		etc. will be "visible" (i.e. "in") the graph; nodes connected using
+		the connection features from {NODE} or {EDGE} (e.g. features `adopt',
+		`disown', `connect', etc.) will not be "visible" to the graph.  These
+		features allow direct manipulation of nodes and/or edges without
+		affecting a particular graph.
+
+		To traverse the nodes/edges in a graph, use the {GRAPH_ITERATOR}
+		classes, or better, use feature `iterator' to return an iterator of
+		the correct type connected to the current graph.
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2012, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: jjj $"
-	URL: 		"$URL: file:///F:/eiffel_repositories/graphs_618/trunk/graphs/interface/containers/graph.e $"
-	date:		"$Date: 2012-07-05 00:31:27 -0400 (Thu, 05 Jul 2012) $"
-	revision:	"$Revision: 13 $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
 	GRAPH
 
 inherit
 
-	IDENTIFIED
-		redefine
-			default_create
-		end
-
-	HASHABLE			-- Used in conjuction with {IDENTIFIED}.`object_id' above
+	SHARED
 		undefine
+			default_create,
 			is_equal,
 			copy
+		end
+
+	HASHABLE
 		redefine
-			default_create
+			default_create,
+			copy,
+			is_equal
 		end
 
 create
@@ -50,8 +50,12 @@ feature {NONE} -- Initialization
 	default_create
 			-- Create an instance
 		do
---			create nodes_imp.make (Default_size)
---			create edges_imp.make (Default_size)
+			hash_code := uuid_generator.generate_uuid.hash_code
+			create iterators.make (Default_size)
+			create nodes_imp.make (Default_size)
+			create edges_imp.make (Default_size)
+--			nodes_imp.set_ordered
+--			edges_imp.set_ordered
 			initial_in_capacity := Default_in_capacity
 			initial_out_capacity := Default_out_capacity
 		ensure then
@@ -74,42 +78,35 @@ feature {NONE} -- Initialization
 feature -- Access
 
 	hash_code: INTEGER
-			-- Hash code value
-		do
-			Result := object_id
-		end
-
-	iterator: GRAPH_ITERATOR
-			-- Create a new iterator for accessing the nodes and edges in Current.
-			-- Anchor for graph iterators.
-		do
-			create Result.make (Current)
-		end
+			-- Hash code from a {RANDOM} value in `default_create'.
 
 	nodes: JJ_SORTABLE_SET [like node_anchor]
-			-- All the nodes "in" Current.  If `is_tree_mode' then this is all
-			-- the nodes reachable from the `root_node'; if not a tree then it
-			-- is simply an alias for `nodes_imp', the implementation set of all
-			-- nodes in Current.
+			-- A copy of the list containing all the nodes in Current
 		do
-			if attached nodes_imp as ni then
-				Result := ni
-			else
-				create Result.make (0)
-			end
+			Result := nodes_imp.twin
 		end
 
 	edges: JJ_SORTABLE_SET [like edge_anchor]
-			-- All the edges "in" Current.  If `is_tree_mode' then this is all
-			-- the edges traversable from the `root_node'; if not a tree then it
-			-- is simply an allias for `edges_imp', the implementation set of all
-			-- edges in Current.
+			-- A copy of the list containing all the edges in Current
 		do
-			if attached edges_imp as ei then
-				Result := ei
-			else
-				create Result.make (0)
-			end
+			Result := edges_imp.twin
+		end
+
+	iterator: GRAPH_ITERATOR
+			-- Create a new iterator for accessing the nodes and
+			-- edges in Current.
+			-- Anchor for graph iterators.
+		do
+			create Result.make (Current)
+			extend_iterator (Result)
+		end
+
+	last_new_edge: like edge_anchor
+			-- Last edge that was created when two nodes were connected.
+			-- This is a convenience so a connection can be made followed
+			-- by manipulation of the new edge.
+		attribute
+			create Result
 		end
 
 feature -- Measurement
@@ -139,13 +136,13 @@ feature -- Measurement
 	node_count: INTEGER
 			-- The number of nodes in Current.
 		do
-			Result := nodes.count
+			Result := nodes_imp.count
 		end
 
 	edge_count: INTEGER
 			-- The number of edges in Current.
 		do
-			Result := edges.count
+			Result := edges_imp.count
 		end
 
 feature -- Element change
@@ -159,14 +156,10 @@ feature -- Element change
 			b: BOOLEAN
 		do
 --			b := mark_unstable (true)
-			if not attached nodes_imp then
-				create nodes_imp.make (default_size)
-			end
-			check attached nodes_imp as ni then
-				ni.extend (a_node)
-			end
+			nodes_imp.extend (a_node)
 			if not a_node.is_in_graph (Current) then
 				a_node.join_graph (Current)
+				notify_dirty
 			end
 --			b := mark_unstable (b)
 		ensure
@@ -177,11 +170,11 @@ feature -- Element change
 
 	extend_edge (a_edge: like edge_anchor)
 			-- Make sure `a_edge' (and its two nodes) is visible to (i.e. "in")
-			-- the graph.  Normally, only `a_edge' and its two nodes will be visible;
-			-- other edges in those two nodes are not automatically added to the
-			-- graph.
-			-- To add all connections reachable through either of the two node of `a_edge',
-			-- pick one of the two nodes and use `deep_extend_node'.
+			-- the graph.  Normally, only `a_edge' and its two nodes will be
+			-- visible; other edges in those two nodes are not automatically
+			-- added to the graph.
+			-- To add all connections reachable through either of the two node
+			-- of `a_edge', pick one of the two nodes and use `deep_extend_node'.
 		require
 			edge_exists: a_edge /= Void
 			is_extendable_edge: is_extendable_edge (a_edge)
@@ -191,17 +184,11 @@ feature -- Element change
 --			b := mark_unstable (true)
 			extend_node (a_edge.node_from)
 			extend_node (a_edge.node_to)
-			if not attached edges_imp then
-				create edges_imp.make (Default_size)
-			end
-			check attached edges_imp as ei then
-				ei.extend (a_edge)
-			end
+			edges_imp.extend (a_edge)
 			if not a_edge.is_in_graph (Current) then
 				a_edge.join_graph (Current)
+				notify_dirty
 			end
---			a_edge.node_from.place_in_graph (Current)
---			a_edge.node_to.place_in_graph (Current)
 --			b := mark_unstable (b)
 		ensure then
 --			mark_restored: is_marked_unstable = old is_marked_unstable
@@ -222,23 +209,20 @@ feature -- Element change
 			e: like edge_anchor
 			i: INTEGER
 		do
-					-- Remove the node and all edges from the `nodes' and `edges'.
-			if attached edges_imp as ei then
-				e_set := a_node.connections
-				from i := 1
-				until i > e_set.count
-				loop
-					e := e_set.i_th (i)
-					ei.prune (e)
-					i := i + 1
-				end
+				-- Remove the node and all edges from the `nodes_imp' and `edges_imp'.
+			e_set := a_node.connections
+			from i := 1
+			until i > e_set.count
+			loop
+				e := e_set.i_th (i)
+				edges_imp.prune (e)
+				i := i + 1
 			end
-			if attached nodes_imp as ni then
-				ni.prune (a_node)
-			end
+			nodes_imp.prune (a_node)
 			if a_node.is_in_graph (Current) then
-				a_node.prune_graph (Current)
+				a_node.leave_graph (Current)
 			end
+			notify_dirty
 		ensure
 			node_removed: not has_node (a_node)
 			node_left_graph: not a_node.is_in_graph (Current)
@@ -254,9 +238,11 @@ feature -- Element change
 			owns_edge: has_edge (a_edge)
 			is_prunable_edge: has_edge (a_edge)
 		do
-			check attached edges_imp as ei then
-				ei.prune (a_edge)
+			edges_imp.prune (a_edge)
+			if a_edge.is_in_graph (Current) then
+				a_edge.leave_graph (Current)
 			end
+			notify_dirty
 		ensure
 			edge_removed: not has_edge (a_edge)
 		end
@@ -283,6 +269,7 @@ feature -- Element change
 				end
 				i := i + 1
 			end
+			notify_dirty
 		end
 
 	connect_nodes (a_node, a_other_node: like node_anchor)
@@ -292,20 +279,17 @@ feature -- Element change
 			-- Side effect: if Current `is_ordered' then the two nodes will be
 			-- ordered after this call.
 		require
-			node_exists: a_node /= Void
-			other_exists: a_other_node /= Void
 			node_can_adopt_child: a_node.can_adopt (a_other_node)
 			can_add_node: is_extendable_node (a_node)
 			can_add_other_node: is_extendable_node (a_other_node)
 			allowable_connection: is_connection_allowed (a_node, a_other_node)
 		do
-			io.put_string ("Enter GRAPH.connect_nodes %N")
 			a_node.adopt (a_other_node)
 			extend_edge (a_node.last_new_edge)
-				-- Remember that {NODE}.`last_new_edge' was "set" during the above call
-				-- call to `adopt' which called `new_edge'.  The graph needs to hold
-				-- on to this last created edge as well.
-			edge_ref.set_edge (a_node.last_new_edge)
+				-- Remember that {NODE}.`last_new_edge' was "set" during the
+				-- above call call to `adopt' which called `new_edge'.  The
+				-- graph needs to hold on to this last created edge as well.
+			last_new_edge := a_node.last_new_edge
 				-- It is now accessable in {GRAPH}.last_new_edge
 			if is_ordered then
 				if not a_node.is_ordered then
@@ -315,7 +299,7 @@ feature -- Element change
 					a_other_node.set_ordered
 				end
 			end
-			io.put_string ("Exit GRAPH.connect_nodes %N")
+			notify_dirty
 		ensure
 			node_inserted: has_node (a_node)
 			other_node_inserted: has_node (a_other_node)
@@ -325,8 +309,8 @@ feature -- Element change
 		end
 
 	connect_nodes_directed (a_node, a_other_node: like node_anchor)
-			-- Make a directed connection between the two nodes, ensuring both nodes
-			-- are reachable (i.e. in the graph).  The new edge can be accessed
+			-- Make a directed connection between the two nodes, ensuring both
+			-- nodes are visible (i.e. in the graph).  Access the new node
 			-- through `last_new_edge'.
 			-- Side effect: if Current `is_ordered' then the two nodes will be
 			-- ordered after this call.
@@ -340,6 +324,7 @@ feature -- Element change
 		do
 			connect_nodes (a_node, a_other_node)
 			last_new_edge.set_directed	-- reminder: `last_new_edge' assigned in `connect_nodes'
+			notify_dirty
 		ensure
 			node_inserted: has_node (a_node)
 			other_node_inserted: has_node (a_other_node)
@@ -350,15 +335,12 @@ feature -- Element change
 		end
 
 	disconnect_nodes (a_node, a_other_node: like node_anchor)
-			-- Remove any connections between the two nodes.
+			-- Remove any connections between the two nodes
 		require
-			node_exists: a_node /= Void
-			other_node_exists: a_other_node /= Void
 			has_node: has_node (a_node)
 			has_other_node: has_node (a_other_node)
-			owns_node: has_node (a_node)
-			owns_other_node: has_node (a_other_node)
 		do
+				-- Loop, because there could be multiple connections
 			from
 			until not a_node.has_node (a_other_node)
 			loop
@@ -373,6 +355,7 @@ feature -- Element change
 					-- because of node/edge symetry and all edges between
 					-- the two nodes were disconnected.
 			end
+			notify_dirty
 		ensure
 			not_connected: not a_node.has_node (a_other_node)
 			other_not_connected: not a_other_node.has_node (a_node)
@@ -381,10 +364,12 @@ feature -- Element change
 		end
 
 	wipe_out
-			-- Remove all nodes and edges from Current.  Do not change the nodes and edges.
+			-- Remove all nodes and edges from Current.
+			-- Do not change the nodes and edges.
 		do
-			nodes_imp := Void
-			edges_imp := Void
+			nodes_imp.wipe_out
+			edges_imp.wipe_out
+			notify_dirty
 		end
 
 feature -- Status report
@@ -396,9 +381,9 @@ feature -- Status report
 			e: like edge_anchor
 		do
 			from i := 1
-			until Result or else i > edges.count
+			until Result or else i > edges_imp.count
 			loop
-				e := edges.i_th (i)
+				e := edges_imp.i_th (i)
 				Result := e.is_directed
 				i := i + 1
 			end
@@ -408,13 +393,14 @@ feature -- Status report
 	is_empty: BOOLEAN
 			-- Is the graph empty?
 		do
-			Result := not attached nodes_imp
+			Result := nodes_imp.is_empty
 		ensure
-			empty_implication: Result implies nodes_imp = Void and edges_imp = Void
+			empty_implication: Result implies nodes_imp.is_empty and edges_imp.is_empty
 		end
 
 	is_ordered: BOOLEAN
-			-- Are nodes added to graph based on an ordered relation to other nodes?
+			-- Are nodes added to graph based on an ordered relation
+			-- to other nodes?
 
 	object_comparison: BOOLEAN
 			-- Must search operations use `equal' rather than `='
@@ -435,8 +421,8 @@ feature -- Status report
 			-- any of its nodes or edges is unstable
 		do
 			Result := is_marked_unstable or
-						nodes.there_exists (agent {like node_anchor}.is_unstable) or
-						edges.there_exists (agent {like edge_anchor}.is_unstable)
+						nodes_imp.there_exists (agent {like node_anchor}.is_unstable) or
+						edges_imp.there_exists (agent {like edge_anchor}.is_unstable)
 		end
 
 feature -- Status setting
@@ -475,14 +461,12 @@ feature -- Status setting
 			i: INTEGER
 		do
 			is_ordered := True
-			if attached nodes_imp as ni then
-				from i := 1
-				until i > ni.count
-				loop
-					n := ni.i_th (i)
-					n.set_ordered		-- also sorts any edges already in `n'.
-					i := i + 1
-				end
+			from i := 1
+			until i > nodes_imp.count
+			loop
+				n := nodes_imp.i_th (i)
+				n.set_ordered		-- sorts any edges already in `n'.
+				i := i + 1
 			end
 		ensure then
 			is_ordered: is_ordered
@@ -496,22 +480,20 @@ feature -- Status setting
 			n: like node_anchor
 			i: INTEGER
 		do
-			is_ordered := True
-			if attached nodes_imp as ni then
-				from i := 1
-				until i > ni.count
-				loop
-					n := ni.i_th (i)
-					n.set_unordered
-					i := i + 1
-				end
+			is_ordered := false
+			from i := 1
+			until i > nodes_imp.count
+			loop
+				n := nodes_imp.i_th (i)
+				n.set_unordered
+				i := i + 1
 			end
 		ensure then
 			not_ordered: not is_ordered
 		end
 
 	mark_unstable (a_mark: BOOLEAN): BOOLEAN
-			-- Set `is_marked_unstable' to `a_mark' and return the old `is_marked_unstable'
+			-- Set `is_marked_unstable' to `a_mark' returning the old value
 		do
 			Result := is_marked_unstable
 			is_marked_unstable := a_mark
@@ -528,19 +510,16 @@ feature -- Basic operations
 			n: like node_anchor
 			i: INTEGER
 		do
-			if attached nodes_imp as ni then
-				ni.sort
-				from i := 1
-				until i > ni.count
-				loop
-					n := ni.i_th (i)
-					n.sort
-					i := i + 1
-				end
+			nodes_imp.sort
+			from i := 1
+			until i > nodes_imp.count
+			loop
+				n := nodes_imp.i_th (i)
+				n.sort
+				i := i + 1
 			end
-			if attached edges_imp as ei then
-				ei.sort
-			end
+			edges_imp.sort
+			notify_dirty
 		end
 
 --	subtract (other: like Current)
@@ -582,7 +561,7 @@ feature -- Basic operations
 feature -- Query
 
 --	edge_count_for_node (a_node: like node_anchor): INTEGER
---			-- The number of edges connected to `a_node' which are visible to Current
+--			-- The number of visible edges connected to `a_node'
 --		require
 --			node_exists: a_node /= Void
 --		local
@@ -601,7 +580,7 @@ feature -- Query
 --		end
 
 --	in_edge_count (a_node: like node_anchor): INTEGER
---			-- The number of edges going into `a_node' which are also visible to Current
+--			-- The number of visible edges going into `a_node'
 --		require
 --			node_exists: a_node /= Void
 --		local
@@ -620,7 +599,7 @@ feature -- Query
 --		end
 
 --	out_edge_count (a_node: like node_anchor): INTEGER
---			-- The number of edges going out of `a_node' which are also visible to Current
+--			-- The number of visible edges going out of `a_node'
 --		require
 --			node_exists: a_node /= Void
 --		local
@@ -640,15 +619,15 @@ feature -- Query
 
 	is_extendable_node (a_node: like node_anchor): BOOLEAN
 			-- Can `a_node' be put into and manipulated by Current?
-			-- Can always put a node into the graph, even a tree, because
-			-- we just end up with a disconnected graph or a forest.
+			-- Always true for a graph.
 		do
 			Result := true
 		end
 
 	is_extendable_edge (a_edge: like edge_anchor): BOOLEAN
 			-- Can `a_edge' be extended into Current?
-			-- True if `a_edge' is not Void and not `is_unstable' and not already in Current.
+			-- True if `a_edge' is not Void and not `is_unstable' and
+			-- not already in Current.
 		do
 			Result := not a_edge.is_unstable and then
 					not has_edge (a_edge)
@@ -675,20 +654,119 @@ feature -- Query
 	has_node (a_node: like node_anchor): BOOLEAN
 			-- Does Current contain `a_node'?
 		do
-			Result := nodes.has (a_node)
+			Result := nodes_imp.has (a_node)
 		end
 
 	has_edge (a_edge: like edge_anchor): BOOLEAN
 			-- Does Current graph contain `a_edge'?
 		do
-			Result := edges.has (a_edge)
+			Result := edges_imp.has (a_edge)
 		end
 
+feature -- Comparison
+
+	is_equal (other: like Current): BOOLEAN
+			-- Is `other' attached to an object considered
+			-- equal to current object?
+			--| `object_id' is not taken into consideration
+		local
+			hc: INTEGER
+		do
+			hc := hash_code
+			hash_code := other.hash_code
+			Result := standard_is_equal (other)
+			hash_code := hc
+		end
+
+feature -- Duplication
+
+	copy (other: like Current)
+			-- Update current object using fields of object attached
+			-- to `other', so as to yield equal objects.
+			--| `hash_code' will return a different value for the two
+			--| objects
+		local
+			hc: INTEGER
+		do
+			if other /= Current then
+				hc := hash_code
+				standard_copy (other)
+				hash_code := hc
+			end
+		end
 
 feature -- Constants
 
 	Default_size: INTEGER = 100
-			-- The default number of nodes and edges Current can initially contain.
+			-- The default number of nodes and edges Current can
+			-- initially contain.
+
+feature {GRAPH_ITERATOR} -- Implementation
+
+	 nodes_imp: like nodes
+			-- All the nodes visible to (i.e. "in") the Current graph.
+			-- This list should not be modified directly, changing the visibility
+			-- of nodes in relation to the Current graph.  Use one of the
+			-- "element change" features of this class instead.
+
+	edges_imp: like edges
+			-- All the edges visible to (i.e. "in") the Current graph.
+			-- This list should not be modified directly, changing the visibility
+			-- of nodes in relation to the Current graph.  Use one of the
+			-- "element change" features of this class instead.
+
+	extend_iterator (a_iterator: like iterator)
+			-- Add `a_iterator' to `iterators'
+		local
+			w: WEAK_REFERENCE [like iterator]
+		do
+			create w.put (a_iterator)
+			iterators.extend (w, a_iterator.hash_code)
+		end
+
+	notify_dirty
+			-- Inform each iterator traversing Current that Current
+			-- may have changed.
+		local
+			w: WEAK_REFERENCE [like iterator]
+			marks: LINKED_SET [INTEGER]
+		do
+			create marks.make
+			from iterators.start
+			until iterators.after
+			loop
+				w := iterators.item_for_iteration
+				if attached w.item as it then
+					it.set_dirty
+				else
+						-- Save key to Void item for removal later, so
+						-- the iteration is not messed up.
+					marks.extend (iterators.key_for_iteration)
+				end
+				iterators.forth
+			end
+				-- Now remove Void items
+			from marks.start
+			until marks.after
+			loop
+				iterators.remove (marks.item)
+				marks.forth
+			end
+		end
+
+	has_iterator (a_code: INTEGER): BOOLEAN
+			-- Does Current have a reference to a {GRAPH_ITERATOR}
+			-- that is indexed by `a_code'
+		do
+			Result := attached iterators.item (a_code) as wr and then
+						attached wr.item
+		end
+
+feature {NONE} -- Implementation
+
+	iterators: HASH_TABLE [WEAK_REFERENCE [like iterator], INTEGER]
+			-- Keeps track of each iterator to inform them when
+			-- Current changes.
 
 feature {NONE} -- Implementation (invariant checking)
 
@@ -699,58 +777,13 @@ feature {NONE} -- Implementation (invariant checking)
 		local
 			e: like edge_anchor
 		do
-			from edges.start
-			until edges.exhausted or Result
+			from edges_imp.start
+			until edges_imp.exhausted or Result
 			loop
-				e := edges.item
+				e := edges_imp.item
 				Result := not has_node (e.node_from) or not has_node (e.node_to)
-				edges.forth
+				edges_imp.forth
 			end
-		end
-
-feature {GRAPH} -- Implementation
-
-	nodes_imp: detachable JJ_SORTABLE_SET [like node_anchor]
-			-- All the nodes visible to (i.e. "in") the Current graph.
-			-- Nodes can be modified directly, changing the visibility of nodes in
-			-- relation to the Current graph, but the intended method of
-			-- adding or deleting nodes is by using one of the "element change"
-			-- features of this class.
-			-- This feature could have been hidden, but that just moves the aliasing
-			-- problem back one level; node and edges could be obtained from a copy
-			-- and then changed, still invalidating the graph properties.
-			-- A deep_twin could have been used but then those copies could not
-			-- really be considered to be "in" the graph.
-
-	edges_imp: detachable JJ_SORTABLE_SET [like edge_anchor]
-			-- All the edges visible to (i.e. "in") the Current graph.
-			-- Edges can be added and deleted from `edges' changing their
-			-- visiblility to the Current graph, but the intended method of
-			-- adding or deleting edges is by using one of the "element change"
-			-- features of this class.
-			-- This feature could have been hidden, but that just moves the aliasing
-			-- problem back one level; node and edges could be obtained from a copy
-			-- and then changed, still invalidating the graph properties.
-			-- A deep_twin could have been used but then those copies could not
-			-- really be considered to be in the graph.
-
-	last_new_edge: like edge_anchor
-			-- Last edge that was created when two nodes were connected.
-			-- This is a convenience so a connection can be made followed
-			-- by manipulation of the new edge.
-		require
-			edge_ref_has_an_edge: edge_ref.edge /= Void
-		do
-			check attached {like edge_anchor} edge_ref.edge as e then
-				Result := e
-			end
-		end
-
-	edge_ref: EDGE_REF
-			-- Holds a reference to the last created edge.
-			-- Once feature used to prevent adding an attribute.
-		once ("OBJECT")
-			create Result
 		end
 
 feature {NONE} -- Anchors (for covariant redefinitions)
@@ -764,7 +797,7 @@ feature {NONE} -- Anchors (for covariant redefinitions)
 		do
 			check
 				do_not_call: False then
-					-- Because give no info; simply used as anchor.
+					-- because gives no info; simply used as anchor.
 			end
 		end
 
@@ -777,14 +810,16 @@ feature {NONE} -- Anchors (for covariant redefinitions)
 		do
 			check
 				do_not_call: False then
-					-- Because give no info; simply used as anchor.
+					-- because gives no info; simply used as anchor.
 			end
 		end
 
 invariant
 
---	nodes_exists: nodes /= Void
---	edges_exists: edges /= Void
+	hash_code_assigned: hash_code /= 0
+--	nodes_sorted: nodes_imp.is_inserting_ordered
+--	edges_sorted: edges_imp.is_inserting_ordered
+
 	edge_in_graph_implication: not has_edge_but_not_its_nodes
 
 --	edge_in_graph_implication: not is_unstable implies

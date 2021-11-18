@@ -2,15 +2,15 @@ note
 	description: "[
 		Iterator for a {LABELED_WEIGHTED_TREE}
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2014, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	LABELED_WEIGHTED_TREE_ITERATOR [L, C -> NUMERIC create default_create end]
+	LABELED_WEIGHTED_TREE_ITERATOR [L, C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 

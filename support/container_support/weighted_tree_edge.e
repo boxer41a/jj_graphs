@@ -2,21 +2,21 @@ note
 	description: "[
 		An edge that can be used in a {WEIGHTED_TREE}
 		]"
-	author:		"Jimmy J. Johnson"
-	copyright:	"Copyright 2014, Jimmy J. Johnson"
-	license:	"Eiffel Forum License v2 (see forum.txt)"
-	author:		"$Author: $"
-	URL: 		"$URL: $"
-	date:		"$Date: $"
-	revision:	"$Revision: $"
+	author:    "Jimmy J. Johnson"
+	date:      "10/27/21"
+	copyright: "Copyright (c) 2021, Jimmy J. Johnson"
+	license:   "Eiffel Forum v2 (http://www.eiffel.com/licensing/forum.txt)"
 
 class
-	WEIGHTED_TREE_EDGE [C -> NUMERIC create default_create end]
+	WEIGHTED_TREE_EDGE [C -> {NUMERIC,
+						COMPARABLE rename default_create as comparable_default_create end}
+						create default_create end]
 
 inherit
 
 	TREE_EDGE
 		undefine
+			cost,
 			check_nodes
 		redefine
 			node_anchor,
