@@ -44,9 +44,22 @@ feature -- Element change
 			other_exists: a_other_node /= Void
 			cost_exists: a_cost /= Void
 			is_connection_allowed: is_connection_allowed (a_node, a_other_node)
+		local
+			e: like edge_anchor
 		do
-			connect_nodes (a_node, a_other_node)
-			a_node.last_new_edge.set_cost (a_cost)
+--			connect_nodes (a_node, a_other_node)
+--			a_node.last_new_edge.set_cost (a_cost)
+				-- The two line above, though more elegant, will not work.  The
+				-- cost of the edge must be assigned before extending that edge
+				-- into the graph because `has_edge' from {GRAPH} will see an
+				-- edge cost of one and mistake the edge for some other.
+				-- So, this feature just mimics `connect_nodes' from {GRAPH}
+				-- inserting a line to set the cost before putting the edge
+				-- into the graph.
+			create e
+			e.set_cost (a_cost)
+			e.connect (a_node, a_other_node)
+			extend_edge (e)
 		ensure
 			node_inserted: has_node (a_node)
 			other_node_inserted: has_node (a_other_node)

@@ -36,11 +36,8 @@ feature {NONE} -- Initialization
 			-- Create a node with `default_out_capacity' and set `value' to `a_value'
 		require
 			value_exists: a_value /= Void
-		local
-			g: like graph_anchor
 		do
-			create g
-			make_with_value_and_order (a_value, g.Default_out_capacity)
+			make_with_value_and_order (a_value, (create {like graph_anchor}).Default_out_capacity)
 		ensure
 			order_set: internal_node_order = (create {like graph_anchor}).default_out_capacity
 			value_set: value = a_value
@@ -66,7 +63,6 @@ feature {NONE} -- Initialization
 			graph_exists: a_graph /= Void
 			value_exists: a_value /= Void
 		do
---			make_with_value_and_order (a_value, a_graph.initial_out_capacity)
 			value_imp := a_value
 			make_with_graph (a_graph)
 		ensure
@@ -101,6 +97,14 @@ feature -- Element change
 			-- Change `value' to `a_value'
 		do
 			value_imp := a_value
+				-- Any {VALUED_GRAPH} in which Current resides may
+				-- need to reorder the nodes, because of the change.
+			from graphs.start
+			until graphs.after
+			loop
+				graphs.item_for_iteration.notify_node_changed (Current)
+				graphs.forth
+			end
 		ensure
 			has_value: value = a_value
 		end

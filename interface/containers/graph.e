@@ -80,14 +80,16 @@ feature -- Access
 	hash_code: INTEGER
 			-- Hash code from a {RANDOM} value in `default_create'.
 
-	nodes: JJ_SORTABLE_SET [like node_anchor]
+	frozen nodes: like nodes_imp
 			-- A copy of the list containing all the nodes in Current
+			-- Frozen:  redefine `nodes_imp' if required
 		do
 			Result := nodes_imp.twin
 		end
 
-	edges: JJ_SORTABLE_SET [like edge_anchor]
+	frozen edges: like edges_imp
 			-- A copy of the list containing all the edges in Current
+			-- Frozen:  redefine `edges_imp' if required
 		do
 			Result := edges_imp.twin
 		end
@@ -189,6 +191,7 @@ feature -- Element change
 				a_edge.join_graph (Current)
 				notify_dirty
 			end
+			last_new_edge := a_edge
 --			b := mark_unstable (b)
 		ensure then
 --			mark_restored: is_marked_unstable = old is_marked_unstable
@@ -289,16 +292,16 @@ feature -- Element change
 				-- Remember that {NODE}.`last_new_edge' was "set" during the
 				-- above call call to `adopt' which called `new_edge'.  The
 				-- graph needs to hold on to this last created edge as well.
-			last_new_edge := a_node.last_new_edge
+--			last_new_edge := a_node.last_new_edge
 				-- It is now accessable in {GRAPH}.last_new_edge
-			if is_ordered then
-				if not a_node.is_ordered then
-					a_node.set_ordered
-				end
-				if not a_other_node.is_ordered then
-					a_other_node.set_ordered
-				end
-			end
+--			if is_ordered then
+--				if not a_node.is_ordered then
+--					a_node.set_ordered
+--				end
+--				if not a_other_node.is_ordered then
+--					a_other_node.set_ordered
+--				end
+--			end
 			notify_dirty
 		ensure
 			node_inserted: has_node (a_node)
@@ -398,13 +401,20 @@ feature -- Status report
 			empty_implication: Result implies nodes_imp.is_empty and edges_imp.is_empty
 		end
 
-	is_ordered: BOOLEAN
-			-- Are nodes added to graph based on an ordered relation
-			-- to other nodes?
+--	is_ordered: BOOLEAN
+--			-- Are nodes added to graph based on an ordered relation
+--			-- to other nodes?
 
 	object_comparison: BOOLEAN
 			-- Must search operations use `equal' rather than `='
 			-- for comparing references? (Default: no, use `='.)
+		do
+			Result := nodes_imp.object_comparison
+		ensure
+			definition: Result = nodes_imp.object_comparison
+			implication: Result implies edges_imp.object_comparison
+-- Fix me:  do I really want edges to follow nodes with this?
+		end
 
 	changeable_comparison_criterion: BOOLEAN
 			-- May `object_comparison' be changed?
@@ -433,7 +443,8 @@ feature -- Status setting
 		require
 			changeable_comparison_criterion: changeable_comparison_criterion
 		do
-			object_comparison := True
+			nodes_imp.compare_objects
+			edges_imp.compare_objects
 		ensure
 			object_comparison
 		end
@@ -444,53 +455,54 @@ feature -- Status setting
 		require
 			changeable_comparison_criterion: changeable_comparison_criterion
 		do
-			object_comparison := False
+			nodes_imp.compare_references
+			edges_imp.compare_references
 		ensure
 			reference_comparison: not object_comparison
 		end
 
-	set_ordered
-			-- Make future connections between nodes be inserted based
-			-- on an ordered relation between the nodes and/or edges.
-			-- This has a side affect and will cause `connect_nodes' to
-			-- have a side affect as well.  Each node in Current will be
-			-- sorted and will now insert edges in order.  Also, any nodes
-			-- connected with Current will be sorted and add edges in order.
-		local
-			n: like node_anchor
-			i: INTEGER
-		do
-			is_ordered := True
-			from i := 1
-			until i > nodes_imp.count
-			loop
-				n := nodes_imp.i_th (i)
-				n.set_ordered		-- sorts any edges already in `n'.
-				i := i + 1
-			end
-		ensure then
-			is_ordered: is_ordered
-		end
+--	set_ordered
+--			-- Make future connections between nodes be inserted based
+--			-- on an ordered relation between the nodes and/or edges.
+--			-- This has a side affect and will cause `connect_nodes' to
+--			-- have a side affect as well.  Each node in Current will be
+--			-- sorted and will now insert edges in order.  Also, any nodes
+--			-- connected with Current will be sorted and add edges in order.
+--		local
+--			n: like node_anchor
+--			i: INTEGER
+--		do
+--			is_ordered := True
+--			from i := 1
+--			until i > nodes_imp.count
+--			loop
+--				n := nodes_imp.i_th (i)
+--				n.set_ordered		-- sorts any edges already in `n'.
+--				i := i + 1
+--			end
+--		ensure then
+--			is_ordered: is_ordered
+--		end
 
-	set_unordered
-			-- Make future connections (edges) between nodes be inserted
-			-- into the nodes after the last edge.
-			-- This changes all nodes connected to Current.
-		local
-			n: like node_anchor
-			i: INTEGER
-		do
-			is_ordered := false
-			from i := 1
-			until i > nodes_imp.count
-			loop
-				n := nodes_imp.i_th (i)
-				n.set_unordered
-				i := i + 1
-			end
-		ensure then
-			not_ordered: not is_ordered
-		end
+--	set_unordered
+--			-- Make future connections (edges) between nodes be inserted
+--			-- into the nodes after the last edge.
+--			-- This changes all nodes connected to Current.
+--		local
+--			n: like node_anchor
+--			i: INTEGER
+--		do
+--			is_ordered := false
+--			from i := 1
+--			until i > nodes_imp.count
+--			loop
+--				n := nodes_imp.i_th (i)
+--				n.set_unordered
+--				i := i + 1
+--			end
+--		ensure then
+--			not_ordered: not is_ordered
+--		end
 
 	mark_unstable (a_mark: BOOLEAN): BOOLEAN
 			-- Set `is_marked_unstable' to `a_mark' returning the old value
@@ -504,23 +516,23 @@ feature -- Status setting
 
 feature -- Basic operations
 
-	sort
-			-- Sort the edges in each node in Current graph.
-		local
-			n: like node_anchor
-			i: INTEGER
-		do
-			nodes_imp.sort
-			from i := 1
-			until i > nodes_imp.count
-			loop
-				n := nodes_imp.i_th (i)
-				n.sort
-				i := i + 1
-			end
-			edges_imp.sort
-			notify_dirty
-		end
+--	sort
+--			-- Sort the edges in each node in Current graph.
+--		local
+--			n: like node_anchor
+--			i: INTEGER
+--		do
+--			nodes_imp.sort
+--			from i := 1
+--			until i > nodes_imp.count
+--			loop
+--				n := nodes_imp.i_th (i)
+--				n.sort
+--				i := i + 1
+--			end
+--			edges_imp.sort
+--			notify_dirty
+--		end
 
 --	subtract (other: like Current)
 --			-- Remove all the nodes and edges in `other' from Current.
@@ -668,7 +680,7 @@ feature -- Comparison
 	is_equal (other: like Current): BOOLEAN
 			-- Is `other' attached to an object considered
 			-- equal to current object?
-			--| `object_id' is not taken into consideration
+			--| `hash_code' is not taken into consideration
 		local
 			hc: INTEGER
 		do
@@ -701,15 +713,23 @@ feature -- Constants
 			-- The default number of nodes and edges Current can
 			-- initially contain.
 
+feature {NODE} -- Implementation
+
+	notify_node_changed (a_node: like node_anchor)
+			-- Called by `a_node' to inform Current that `a_node' changed
+			-- Refefine to react to this change.
+		do
+		end
+
 feature {GRAPH_ITERATOR} -- Implementation
 
-	 nodes_imp: like nodes
+	nodes_imp: JJ_SORTABLE_SET [like node_anchor]
 			-- All the nodes visible to (i.e. "in") the Current graph.
 			-- This list should not be modified directly, changing the visibility
 			-- of nodes in relation to the Current graph.  Use one of the
 			-- "element change" features of this class instead.
 
-	edges_imp: like edges
+	edges_imp: JJ_SORTABLE_SET [like edge_anchor]
 			-- All the edges visible to (i.e. "in") the Current graph.
 			-- This list should not be modified directly, changing the visibility
 			-- of nodes in relation to the Current graph.  Use one of the
@@ -817,8 +837,6 @@ feature {NONE} -- Anchors (for covariant redefinitions)
 invariant
 
 	hash_code_assigned: hash_code /= 0
---	nodes_sorted: nodes_imp.is_inserting_ordered
---	edges_sorted: edges_imp.is_inserting_ordered
 
 	edge_in_graph_implication: not has_edge_but_not_its_nodes
 

@@ -1,28 +1,33 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-16-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-16-0 http://www.eiffel.com/developers/xml/configuration-1-16-0.xsd" name="jj_graphs" uuid="A2EC60F7-4CE2-4F45-B8C7-F1099F138EF8" library_target="jj_graphs">
+<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-21-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-21-0 http://www.eiffel.com/developers/xml/configuration-1-21-0.xsd" name="jj_graphs" uuid="A2EC60F7-4CE2-4F45-B8C7-F1099F138EF8" library_target="jj_graphs">
 	<target name="jj_graphs">
 		<root all_classes="true"/>
 		<file_rule>
 			<exclude>/\.svn</exclude>
 		</file_rule>
-		<option warning="true" full_class_checking="true" is_attached_by_default="true" void_safety="all" syntax="standard">
+		<option warning="warning" full_class_checking="true" is_attached_by_default="true" syntax="standard" manifest_array_type="mismatch_warning">
 			<assertions precondition="true"/>
 		</option>
+		<setting name="total_order_on_reals" value="false"/>
+		<setting name="dead_code_removal" value="feature"/>
+		<capability>
+			<void_safety support="all" use="all"/>
+		</capability>
 		<library name="base" location="$ISE_LIBRARY\library\base\base.ecf"/>
-        <library name="uuid" location="$ISE_LIBRARY\library\uuid\uuid.ecf"/>
 		<library name="jj_containers" location="..\jj_containers\jj_containers.ecf" readonly="false"/>
+		<library name="uuid" location="$ISE_LIBRARY\library\uuid\uuid.ecf"/>
 		<cluster name="jj_graphs" location=".\" recursive="true">
 			<description>These classes represent graphs, where a graph is a collection of nodes and edges.</description>
 			<file_rule>
-				<exclude>/todo$</exclude>
-				<exclude>/tests$</exclude>
+				<exclude>/.git$</exclude>
+				<exclude>/.svn$</exclude>
+				<exclude>/CVS$</exclude>
+				<exclude>/EIFGENs$</exclude>
 				<exclude>/demo$</exclude>
 				<exclude>/demo_graphical$</exclude>
 				<exclude>/docs$</exclude>
-                <exclude>/EIFGENs$</exclude>
-                <exclude>/CVS$</exclude>
-                <exclude>/.svn$</exclude>
-                <exclude>/.git$</exclude>
+				<exclude>/tests$</exclude>
+				<exclude>/todo$</exclude>
 			</file_rule>
 		</cluster>
 	</target>

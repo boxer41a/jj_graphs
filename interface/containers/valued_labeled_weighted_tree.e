@@ -30,6 +30,9 @@ inherit
 		end
 
 	LABELED_WEIGHTED_TREE [L, C]
+		undefine
+			default_create,
+			notify_node_changed
 		redefine
 			iterator,
 			node_anchor,

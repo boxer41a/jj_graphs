@@ -73,9 +73,9 @@ feature {NONE} -- Initialization
 			create node_z.make_with_value ("Z")
 				-- Add nodes to container for bookkeeping
 			nodes.extend (node_a, node_a.value)
-			nodes.extend (node_b, "node B")
-			nodes.extend (node_c, "node C")
-			nodes.extend (node_d, "node D")
+			nodes.extend (node_b, node_b.value)
+			nodes.extend (node_c, node_c.value)
+			nodes.extend (node_d, node_d.value)
 			nodes.extend (node_e, "node E")
 			nodes.extend (node_f, "node F")
 			nodes.extend (node_g, "node G")
@@ -96,7 +96,7 @@ feature {NONE} -- Initialization
 			nodes.extend (node_v, "node V")
 			nodes.extend (node_w, "node W")
 			nodes.extend (node_x, "node X")
-			nodes.extend (node_y, "node y")
+			nodes.extend (node_y, "node Y")
 			nodes.extend (node_z, "node Z")
 			check
 				nodes.definite_item ("A") = node_a
@@ -122,7 +122,7 @@ feature {NONE} -- Initialization
 				-- (i.e. the ones created here, not the ones from `make_nodes'
 			check attached graph_2.find_valued_node ("A") as n then
 				nodes.force (n, "A")
-				node_a:= n
+				node_a := n
 			end
 			check attached graph_2.find_valued_node ("B") as n then
 				nodes.force (n, "B")

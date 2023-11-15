@@ -19,9 +19,6 @@ inherit
 			extend as valued_tree_extend
 		export
 			{NONE}
-				set_ordered,
-				set_unordered,
-				sort,
 				jj_tree_wipe_out
 		redefine
 			default_create,

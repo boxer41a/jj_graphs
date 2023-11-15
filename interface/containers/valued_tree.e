@@ -15,7 +15,8 @@ inherit
 	JJ_TREE
 		undefine
 			default_create,
-			iterator
+			iterator,
+			notify_node_changed
 		redefine
 			node_anchor,
 			edge_anchor

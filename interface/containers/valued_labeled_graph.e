@@ -1,4 +1,4 @@
-note
+ note
 	description: "[
 			A graph whose nodes contain data of type N and whose edges are
 			marked with a `label' of type E.
@@ -31,9 +31,7 @@ inherit
 			has as has_label
 		undefine
 			default_create,
-			sort,
-			set_ordered,
-			set_unordered
+			notify_node_changed
 		redefine
 			iterator,
 			node_anchor,

@@ -68,7 +68,7 @@ feature -- Access
 	hash_code: INTEGER
 			-- Assigned in `default_create
 
-	frozen cost: like cost_imp
+	frozen cost: like recomputed_cost
 			-- The price of exploring Current
 			-- The default returns the number of edges
 			-- Redefine `recompute_cost' assigning result to `cost_imp'

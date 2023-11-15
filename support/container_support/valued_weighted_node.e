@@ -27,9 +27,7 @@ inherit
 		undefine
 			is_empty,
 			is_less,
-			is_equal,
-			is_sorted,
-			sort
+			is_equal
 		redefine
 			graph_anchor,
 			node_anchor,

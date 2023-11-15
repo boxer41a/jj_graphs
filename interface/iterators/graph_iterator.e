@@ -581,17 +581,17 @@ feature -- Query
 
 			else
 					-- use Kruskal's algorithm
-				e_set := graph.edges_imp
-				e_set.sort
-				from i := 1
-				until i > e_set.count
-				loop
-					e := e_set.i_th (i)
-					if not Result.has_node (e.node_from) or else not Result.has_node (e.node_to) then
-						Result.extend_edge (e)
-					end
-					i := i + 1
-				end
+--				e_set := graph.edges_imp
+--				e_set.sort
+--				from i := 1
+--				until i > e_set.count
+--				loop
+--					e := e_set.i_th (i)
+--					if not Result.has_node (e.node_from) or else not Result.has_node (e.node_to) then
+--						Result.extend_edge (e)
+--					end
+--					i := i + 1
+--				end
 			end
 		end
 
@@ -601,8 +601,8 @@ feature -- Cursor movement
 	start
 			-- Move to the first item as specified by traversal_order
 		require
-			root_exists: has_root_node
-			has_valid_root: is_valid_root_node (root_node)
+--			root_exists: has_root_node
+--			has_valid_root: is_valid_root_node (root_node)
 		do
 			initialize_traversal
 			inspect traversal_method
@@ -688,9 +688,6 @@ feature -- Cursor movement
 
 	shortest_first_start
 			-- Move to the first node when traversing shortest paths first.
-		require
-			root_exists: has_root_node
-			has_valid_root: is_valid_root_node (root_node)
 		local
 			p: like path_anchor
 		do
@@ -728,11 +725,10 @@ feature -- Cursor movement
 					-- Explore the path and queue children
 				explore_path (new_p)
 				go_on
-				stack_children (new_p, false)		-- no queue children
+				queue_children (new_p)
 			end
 		ensure
-			is_empty_implies_after: graph.is_empty implies is_after
-			no_root_implication: not graph.is_empty and not has_root_node implies node = graph.nodes_imp.i_th (1)
+			no_root_implication: not graph.is_empty and not has_root_node implies node = graph.nodes.i_th (1)
 			has_root_implication: not graph.is_empty and has_root_node and then
 									(is_seeing_reachables or else graph.has_node (root_node)) implies is_at_root
 		end
@@ -759,7 +755,7 @@ feature -- Cursor movement
 					-- Explore the path and queue children
 				explore_path (new_p)
 				go_on
-				stack_children (new_p, true)
+				stack_children (new_p)
 			end
 		ensure
 			is_empty_implies_after: graph.is_empty implies is_after
@@ -779,9 +775,6 @@ feature -- Cursor movement
 			--       2 5   9 12
 			--      /|     |\
 			--     1 3     8 10
-		require
-			root_exists: has_root_node
-			has_valid_root: is_valid_root_node (root_node)
 		local
 			new_p: like path_anchor
 		do
@@ -851,7 +844,7 @@ feature -- Cursor movement
 				next_p := next_path
 				if attached next_p as p then
 					explore_path (p)
-					stack_children (p, false) -- no queue children
+					queue_children (p)
 				else
 					is_after := true
 				end
@@ -885,7 +878,7 @@ feature -- Cursor movement
 				next_p := next_path
 				if attached next_p as p then
 					explore_path (p)
-					stack_children (p, true)
+					stack_children (p)
 				else
 					is_after := true
 				end
@@ -960,72 +953,66 @@ feature -- Cursor movement
 		require
 			not_after: not is_after
 		local
+			e: like edge_anchor
 			n: like node_anchor
-			e_set: JJ_SORTABLE_SET [like edge_anchor]
-			cur_p, p2: like path_anchor
-			p3: like path_anchor
+			cur_p, p: like path_anchor
 			found_p: like path_anchor
+			e_set: JJ_SORTABLE_SET [like edge_anchor]
 		do
 			if is_before then
 --				in_order_start
 				start
 			else
-				cur_p := path
-				if attached cur_p as p then
-					if p.edge_count = 0 then
-						if was_node_visited (p.last_node) then
-								-- Attempt down on right children
-							e_set := traversal_set (p.last_node)
-							p2 := go_down (p, e_set.count // 2 + 1)
-							if attached p2 then
-								found_p := p2
-							else
-								go_after
-							end
-						else
-							found_p := p
-						end
+				check
+					path_not_empty: not path.is_empty
+						-- because ...?
+				end
+					-- Must loop for when down in tree and no more nodes
+				from cur_p := path
+				until attached found_p or else not attached cur_p
+				loop
+						-- Check for right-side children of current node
+--					p := go_right_child (cur_p, Right_half)
+					e_set := traversal_set (cur_p.last_node)
+					p := go_down (cur_p, (e_set.count // 2) + (e_set.count \\ 2))
+					if attached p as p1 then
+						found_p := p1
 					else
-							-- attempt right sibling on left half of edges
-						n := p.last_node
-						e_set := traversal_set (n)
-						p2 := go_right (p, e_set.count // 2)
-						if attached p2 then
-							found_p := p2
-						else
-								-- Attempt go up to parent node
-							p2 := go_up (p)
-							if attached p2 as p4 then
-								if not was_node_visited (p4.last_node) then
-									found_p := p4
-								end
-							else
-									-- Attempt down on right edges
-								p2 := go_down (p, e_set.count // 2 + 1)
-								if attached p2 then
+							-- Check parent node's children
+						if cur_p.edge_count >= 1 then
+								-- There is a parent node
+							e := cur_p.last_edge
+							n := e.other_node (cur_p.last_node)
+							if was_node_visited (n) then
+									-- Finish exploring right half of the edges
+								p := go_right_sibling (cur_p, Right_half)
+								if attached p as p2 then
 									found_p := p2
 								else
-										-- Attempt up then down on right half of edges
-									p2 := go_up_down (p, e_set.count // 2 + 1)
-									if attached p2 then
-										found_p := p2
-									else
-											-- Go up to parent's parent then down left
-										from p2 := go_up (p)
-										until found_p /= Void or else p2 = Void
-										loop
-											if attached p2 then
-												p3 := go_up_down (p2, 1)
-												if attached p3 then
-													found_p := p3
-												else
-													p2 := go_up (p2)
-												end
-											end
-										end
+										-- No more siblings on right half
+									cur_p := go_up (cur_p)
+								end
+							else
+									-- Explore the left half of edges
+								p := go_right_sibling (cur_p, Left_half)
+								if attached p as p3 then
+									found_p := p3
+								else
+										-- No more siblings in left half, so go up
+									p := go_up (cur_p)
+									if attached p as p4 then
+										found_p := p4
 									end
 								end
-		 					end
+							end
+						else
+								-- There is no parent
+							p := go_right_sibling (cur_p, Right_half)
+							if attached p as p5 then
+								found_p := p5
+							else
+								cur_p := Void
+							end
 						end
 					end
 				end
@@ -1283,19 +1270,20 @@ feature {NONE} -- Cursor movement (helper routines)
 			end
 		end
 
-	go_right (a_path: like path_anchor; a_index: INTEGER): detachable like path_anchor
-			-- Attempt to find a sibling to the right of the last node
-			-- but don't look beyond the edge at `a_index'.
+	go_right_sibling (a_path: like path_anchor; a_part: like left_half): detachable like path_anchor
+			-- Attempt to find an older sibling in `a_part' of the children
+			-- of the parent node of the `last_node' in `a_path'.
 			-- Void if not found.
 		require
 			not_off: not is_off
+			valid_part: a_part = Left_half or a_part = Right_half or a_part = Both_halves
 		local
 			p: like path_anchor
 			e, incoming_e: like edge_anchor
 			n, parent_n: like node_anchor
 			e_set:JJ_SORTABLE_SET [like edge_anchor]
 			tup: TUPLE [position: INTEGER; was_found: BOOLEAN]
-			i: INTEGER
+			i, cnt: INTEGER
 			found: BOOLEAN
 		do
 			p := a_path.twin
@@ -1308,8 +1296,19 @@ feature {NONE} -- Cursor movement (helper routines)
 					incoming_e := p.last_edge
 				end
 				tup := e_set.seek_position (e)
-				from i := tup.position
-				until found or i > e_set.count or i > a_index
+				inspect a_part
+				when Left_half then
+					i := tup.position.max (1)
+					cnt := (e_set.count // 2) + (e_set.count \\ 2)
+				when Right_half then
+					i := tup.position.max ((e_set.count // 2) + (e_set.count \\ 2))
+					cnt := e_set.count
+				else
+					i := tup.position.max (1)
+					cnt := e_set.count
+				end
+				from
+				until attached Result or else i > cnt
 				loop
 					e := e_set.i_th (i)
 					if e = incoming_e then
@@ -1328,9 +1327,88 @@ feature {NONE} -- Cursor movement (helper routines)
 			end
 		end
 
-	stack_children (a_path: like path_anchor; is_stacking: BOOLEAN)
-			-- Stack or queue into `pending_paths (depending on is_stacking')
-			-- the children of the `last_node' of `a_path'
+	Left_half: INTEGER = 1
+	Right_half: INTEGER = 2
+	Both_halves: INTEGER = 3
+
+	go_right_child (a_path: like path_anchor; a_part: INTEGER): detachable like path_anchor
+			-- Find an untraversed path from the `last_node' of `a_path'
+			-- on the `Left_half', `Right_half, or `Both_halves' of the
+			-- children while ignoring the incoming edge.
+		require
+			not_off: not is_off
+			valid_part: a_part = Left_half or a_part = Right_half or a_part = Both_halves
+		local
+			p: like path_anchor
+			e, incoming_e: like edge_anchor
+			n: like node_anchor
+			e_set: JJ_SORTABLE_SET [like edge_anchor]
+			i, cnt: INTEGER
+		do
+			p := a_path.twin
+			e_set := traversal_set (p.last_node)
+			if p.edge_count >= 1 then
+				incoming_e := p.last_edge
+			end
+			inspect a_part
+			when Left_half then
+				i := 1
+				cnt := (e_set.count // 2) + (e_set.count \\ 2)
+			when Right_half then
+				i := (e_set.count // 2) + (e_set.count \\ 2)
+				cnt := e_set.count
+			else
+				i := 1
+				cnt := e_set.count
+			end
+			from
+			until attached Result or else i > cnt
+			loop
+				e := e_set.i_th (i)
+				if e /= incoming_e then
+					n := e.other_node (a_path.last_node)
+					p.extend (e)
+					if not is_cyclic (p) and then should_add_this (n, e, p) then
+						Result := p
+					else
+						p.remove
+					end
+				end
+				i := i + 1
+			end
+		end
+
+	stack_children (a_path: like path_anchor)
+			-- Stack the children of the `last_node' of `a_path'
+			-- into `pending_paths
+		local
+			p: like path_anchor
+			n, last_n: like node_anchor
+			e: like edge_anchor
+			e_set: JJ_SORTABLE_SET [like edge_anchor]
+			i: INTEGER
+		do
+			last_n := a_path.last_node
+			e_set := traversal_set (last_n)
+			from i := e_set.count
+			until i < 1
+			loop
+				e := e_set.i_th (i)
+				n := e.other_node (last_n)
+				p := a_path.twin
+				p.extend (e)
+				if not is_cyclic (p) and then should_add_this (n, e, p) then
+						-- `pending_paths' is an array
+					pending_paths.start		-- move this line out of loop?
+					pending_paths.put_left (p)
+				end
+				i := i - 1
+			end
+		end
+
+	queue_children (a_path: like path_anchor)
+			-- Queue the children of the `last_node' of `a_path'
+			-- into `pending_paths
 		local
 			p: like path_anchor
 			n, last_n: like node_anchor
@@ -1349,12 +1427,7 @@ feature {NONE} -- Cursor movement (helper routines)
 				p.extend (e)
 				if not is_cyclic (p) and then should_add_this (n, e, p) then
 						-- `pending_paths' is an array
-					if is_stacking then
-						pending_paths.start		-- move this line out of loop?
-						pending_paths.put_left (p)
-					else
-						pending_paths.extend (p)
-					end
+					pending_paths.extend (p)
 				end
 				i := i + 1
 			end
@@ -1551,41 +1624,6 @@ feature {NONE} -- Implementation
 --			end
 --		end
 
---	get_sibling (a_path: like path_anchor): detachable like path_anchor
---			-- Visit the next sibling of the last_node in `a_path'.
---			-- Similar to `get_child' except a sibling cannot already be in `a_path'.
---		require
---			path_exists: a_path /= Void
-----			not_root_path: not a_path.is_empty
---		local
---			n: like node_anchor
---			next_n: like node_anchor
---			next_e: like edge_anchor
---			next_p: like path_anchor
---			i: INTEGER
---			e_checked: ARRAYED_SET [like edge_anchor]
---		do
---			if not a_path.is_empty then
---				next_p := a_path.twin
---				create e_checked.make (10)
---				e_checked.extend (next_p.last_edge)
---				next_p.remove
---				n := next_p.last_node
---				from i := 1
---				until Result /= Void or else i > n.count
---				loop
---					next_e := n.i_th_edge (i)
---					next_n := next_e.other_node (n)
---					next_p.extend (next_e)
---					if not a_path.has_node (next_n) and then should_add_this (next_n, next_e, next_p) then
---						Result := next_p
---					else
---						next_p.remove
---						i := i + 1
---					end
---				end
---			end
---		end
 
 --	get_ancestor (a_path: like path_anchor): detachable like path_anchor
 --			-- try to find an ancestor node that has not been visited
@@ -1631,40 +1669,6 @@ feature {NONE} -- Implementation
 
 --		do
 --			create Result
---		end
-
---	traverse_edges_in_path (a_path: like path_anchor)
---			-- Add all the edges in `a_path' to the `traversed_edges' list.
---		require
---			path_exists: a_path /= Void
---		local
---			i: INTEGER
---			e: like edge_anchor
---		do
---			from i := 1
---			until i > a_path.edge_count
---			loop
---				e := a_path.i_th_edge (i)
---				traversed_edges.extend (e)
---				i := i + 1
---			end
---		end
-
---	visit_nodes_in_path (a_path: like path_anchor)
---			-- Add all the nodes in `_path' to the `visited_nodes' list.
---		require
---			path_exists: a_path /= Void
---		local
---			i: INTEGER
---			n: like node_anchor
---		do
---			from i := 1
---			until i > a_path.node_count
---			loop
---				n := a_path.i_th_node (i)
---				visited_nodes.extend (n)
---				i := i + 1
---			end
 --		end
 
 	leaf_first_start

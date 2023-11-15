@@ -37,7 +37,8 @@ inherit
 
 	LABELED_WEIGHTED_GRAPH [L, C]
 		undefine
-			default_create
+			default_create,
+			notify_node_changed
 		redefine
 			iterator,
 			node_anchor,

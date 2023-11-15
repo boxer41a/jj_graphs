@@ -32,7 +32,8 @@ inherit
 		rename
 			has as has_cost
 		undefine
-			default_create
+			default_create,
+			notify_node_changed
 		redefine
 			iterator,
 			node_anchor,

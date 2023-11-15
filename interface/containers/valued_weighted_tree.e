@@ -30,12 +30,12 @@ inherit
 		rename
 			has as has_cost
 		undefine
+			default_create,
 			is_extendable_edge,
 			is_connection_allowed,
 			prune_node,
-			prune_edge
---			difference,
---			subtract
+			prune_edge,
+			notify_node_changed
 		redefine
 			iterator,
 			node_anchor,

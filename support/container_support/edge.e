@@ -53,7 +53,7 @@ feature {NONE} -- Default_create
 
 feature -- Access
 
-	cost: COMPARABLE -- NUMERIC
+	cost: NUMERIC	-- COMPARABLE did not work well with PATH
 			-- The cost to traverse Current.  Defaults to {INTEGER} one.
 		local
 			x: INTEGER
@@ -340,13 +340,11 @@ feature -- Comparison
 						-- Therefore, proceed to check the values in the edges.
 					if cost ~ other.cost then
 						Result := check_nodes (other)
+					elseif attached {COMPARABLE} cost as c and then
+							attached {COMPARABLE} other.cost as oc then
+						Result := c < oc
 					else
-						Result := cost < other.cost
---					elseif attached {COMPARABLE} cost as c and then
---							attached {COMPARABLE} cost as oc then
---						Result := c < oc
---					else
---						Result := check_nodes (other)
+						Result := check_nodes (other)
 					end
 				elseif is_connected and not other.is_connected then
 						-- One or both of the ends of the other edge is not

@@ -54,12 +54,9 @@ feature {NONE} -- Initialization
 
 	default_create
 			-- Creat a node that is not in any graph
-		local
-			g: like graph_anchor
 		do
-			create g
 			create visitors.make (1)
-			make_with_order (g.Default_out_capacity)
+			make_with_order ((create {like graph_anchor}).Default_out_capacity)
 		end
 
 	make_with_order (a_order: INTEGER)
@@ -177,13 +174,13 @@ feature -- Access
 			end
 		end
 
-	connections: JJ_SORTABLE_SET [like edge_anchor]
+	connections: like edges
 			-- A set of all the incoming and outgoing edges.
 		do
 			Result := edges.twin
 		end
 
-	connections_from: JJ_SORTABLE_SET [like edge_anchor]
+	connections_from: like edges
 			-- Set of all outgoing edges
 		do
 			if attached out_edges as o then
@@ -193,13 +190,13 @@ feature -- Access
 			end
 		end
 
-	connections_to: JJ_SORTABLE_SET [like edge_anchor]
+	connections_to: like edges
 			-- Set of all incoming edges
 		do
 			Result := in_edges.twin
 		end
 
-	related_connections: JJ_SORTABLE_SET [like edge_anchor]
+	related_connections: like edges
 			-- All the edges reachable from Current.
 			-- The ancestor, descendent, and cousin edges.
 		local
@@ -215,7 +212,7 @@ feature -- Access
 			end
 		end
 
-	ancestor_connections: JJ_SORTABLE_SET [like edge_anchor]
+	ancestor_connections: like edges
 			-- All the edges "upward" from Current.
 			-- The ancestor edges.
 		local
@@ -259,7 +256,7 @@ feature -- Access
 			end
 		end
 
-	descendant_connections: JJ_SORTABLE_SET [like edge_anchor]
+	descendant_connections: like edges
 			-- All the edges "downward" from Current.
 			-- The descendent edges.
 		local
@@ -593,16 +590,6 @@ feature -- Basic operations
 			is_empty: count = 0
 		end
 
-	sort
-			-- Make sure all the edges in Current are in the proper order.
-		do
-			edges.sort
-			in_edges.sort
-			if attached out_edges as o then
-				o.sort
-			end
-		end
-
 feature -- Measurement
 
 	count: INTEGER
@@ -646,16 +633,6 @@ feature -- Status report
 			Result := False
 		end
 
-	is_sorted: BOOLEAN
-			-- Are the child edges of Current sorted?
-			-- True if there are no child edges.
-		do
-			Result := edges.is_sorted
-		end
-
-	is_ordered: BOOLEAN
-			-- Are edges being inserted in order?
-
 	is_unstable: BOOLEAN
 			-- Is Current in an unstable state were some invariants do not hold?
 			-- This occurs during connection and disconnection of contained edges.
@@ -694,34 +671,6 @@ feature -- Status setting
 		ensure
 			not_has_graph: not graphs.has (a_graph)
 			not_graph_has_node: not a_graph.has_node (Current)
-		end
-
-	set_ordered
-			-- Sort the edges and make future insertions keep edges sorted.
-		do
-			sort
-			edges.set_ordered
-			in_edges.set_ordered
-			if attached out_edges as o then
-				o.set_ordered
-			end
-			is_ordered := True
-		ensure
-			is_sorted: is_sorted
-			is_inserting_in_order: is_ordered
-		end
-
-	set_unordered
-			-- Make future insertion put new edges at the end
-		do
-			edges.set_unordered
-			in_edges.set_unordered
-			if attached out_edges as o then
-				o.set_unordered
-			end
-			is_ordered := False
-		ensure
-			not_inserting_in_order: not is_ordered
 		end
 
 	mark_unstable (a_mark: BOOLEAN): BOOLEAN
@@ -1005,6 +954,7 @@ feature {EDGE} -- Implementation (Basic operations)
 			if a_edge.terminates_at (Current) then
 				in_edges.extend (a_edge)
 			end
+			last_new_edge := a_edge
 			b := mark_unstable (b)
 		ensure then
 			has_edge: has_edge (a_edge)

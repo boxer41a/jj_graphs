@@ -14,7 +14,9 @@ inherit
 
 	GRAPH
 		redefine
+			default_create,
 			iterator,
+			notify_node_changed,
 			node_anchor,
 			edge_anchor
 		end
@@ -22,6 +24,16 @@ inherit
 create
 	default_create,
 	make_with_capacity
+
+feature {NONE} -- Initialization
+
+	default_create
+			-- Create an instance.
+			-- Redefined to make `node's a sortable set
+		do
+			Precursor
+			nodes_imp.set_ordered
+		end
 
 feature -- Access
 
@@ -56,14 +68,10 @@ feature -- Element change
 		local
 			n1, n2: like node_anchor
 		do
-			io.put_string ("enter VALUED_GRAPH.connect %N")
 			if has (a_value) then
 				n1 := last_node
 			else
 				create n1.make_with_value_and_graph (a_value, Current)
-				if is_ordered then
-					n1.set_ordered
-				end
 				if object_comparison then
 					n1.compare_objects
 				end
@@ -72,16 +80,11 @@ feature -- Element change
 				n2 := last_node
 			else
 				create n2.make_with_value_and_graph (a_other_value, Current)
-				if is_ordered then
-					n2.set_ordered
-				end
 				if object_comparison then
 					n2.compare_objects
 				end
 			end
-			io.put_string ("GRAPH.connect before calling `connect_nodes' %N")
 			connect_nodes (n1, n2)
-			io.put_string ("Exit VALUED_GRAPH.connect %N")
 		ensure
 			value_1_node_in_graph: has (a_value)
 			value_2_node_in_graph: has (a_other_value)
@@ -128,9 +131,9 @@ feature -- Element change
 		do
 			if not has (a_value) then
 				create n.make_with_value_and_graph (a_value, Current)
-				if is_ordered then
-					n.set_ordered
-				end
+--				if is_ordered then
+--					n.set_ordered
+--				end
 				if object_comparison then
 					n.compare_objects
 				end
@@ -243,26 +246,23 @@ feature -- Query
 			end
 		end
 
-feature {NONE} -- Implementation
+feature {NODE} -- Implementation
 
---	last_found_node: like node_anchor
---			-- The last node found with a call to `has'
---		require
---			node_ref_has_a_node: found_node_ref.node /= Void
---		do
---			check attached {like node_anchor} found_node_ref.node as n then
---				Result := n
---			end
---		end
+	notify_node_changed (a_node: like node_anchor)
+			-- Called by `a_node' to inform Current that `a_node' changed
+			-- Refefine to react to this change.
+		do
+			nodes_imp.sort
+				-- It may be faster to delete the insert the node
+--			nodes_imp.prune (a_node)
+--			nodes_imp.extend (a_node)
+			notify_dirty
+		end
+
+feature {NONE} -- Implementation
 
 	last_node_imp: detachable like node_anchor
 			-- When `connect' creates a new node it is placed here.
-
---	found_node_ref: NODE_REF
---			-- Holds the node that was found by the last call to `has'
---		once
---			create Result
---		end
 
 feature {NONE} -- Anchors (for covariant redefinitions)
 
@@ -304,5 +304,9 @@ feature {NONE} -- Anchors (for covariant redefinitions)
 					-- Because give no info; simply used as anchor.
 			end
 		end
+
+invariant
+
+	nodes_are_sorted: nodes_imp.is_sorted
 
 end

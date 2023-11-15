@@ -27,6 +27,9 @@ inherit
 	LABELED_TREE [L]
 		rename
 			has as has_label
+		undefine
+			default_create,
+			notify_node_changed
 		redefine
 			iterator,
 			node_anchor,
@@ -40,8 +43,6 @@ inherit
 			is_connection_allowed,
 			prune_node,
 			prune_edge
---			difference,
---			subtract
 		redefine
 			iterator,
 			node_anchor,

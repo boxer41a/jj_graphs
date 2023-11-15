@@ -1,12 +1,12 @@
-﻿note
+note
 	description: "[
 		Objects representing delayed calls to a routine,
 		with some operands possibly still open
 		
 		I, Jimmy J. Johnson, changed the export status of
 		feature `closed_operands' so that features such as
-		`signature' and `is_valid_target_type' from class
-		{GRAPH_TESTS} would be easier to program.s
+		`signature' and `is_valid_target_type' from some of
+        my test classes would be easier to program.
 	]"
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."

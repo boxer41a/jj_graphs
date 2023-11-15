@@ -17,18 +17,13 @@ inherit
 
 	VALUED_EDGE [V]
 		undefine
-			default_create,
-			cost,
-			is_equal,
-			is_less
+			cost
 		redefine
 			node_anchor,
 			iterator_anchor
 		end
 
 	WEIGHTED_EDGE [C]
-		undefine
-			check_nodes
 		redefine
 			node_anchor,
 			iterator_anchor
