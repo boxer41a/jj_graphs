@@ -4,7 +4,7 @@ note
 		The tree can only be built by adding onto nodes that are already in the
 		tree.  In other words, the tree grows down by connecting a node as a 
 		child to a node that is already in the tree or up by connecting a parent
-		to the one root 	node in the tree.  Nodes or edges can be removed, which 
+		to the one root node in the tree.  Nodes or edges can be removed, which 
 		will remove all descendent nodes as well.
 		]"
 	author:    "Jimmy J. Johnson"
@@ -64,9 +64,11 @@ feature -- Measurement
 feature -- Basic operations
 
 	extend_root_node (a_node: like node_anchor)
-			-- Add `a_node' as the `root_node' of Current, but only if Current is empty
-			-- This allows a tree with only one node; other nodes must be added
-			-- using the `connect_nodes' or `extend_edge' features.
+			-- Add `a_node' as the `root_node' of Current, if and
+			-- only if Current is empty.
+			-- This allows a tree with only one node; other nodes
+			-- must be added using the `connect_nodes' or `extend_edge'
+			-- features.
 		require
 			is_empty: is_empty
 		do

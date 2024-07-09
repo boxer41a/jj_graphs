@@ -708,9 +708,9 @@ feature -- Cursor movement
 	breadth_first_start
 			-- Move to the first `node' in breadth-first order.
 			-- This `node' will be the `root_node' if it exists, and it
-			-- is in `graph'.  The `node' will also be the `root_node'
+			-- is in `graph'.  The `node' will also be the `root_node' if
 			-- it exists and `is_seeing_reachables'.  If not `has_root_node'
-			-- the the `node' will the the first node in the `graph' if
+			-- then the `node' will the the first node in the `graph' if
 			-- the `graph' is not empty.
 			-- Otherwise `is_after'.
 		local

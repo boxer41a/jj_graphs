@@ -59,14 +59,14 @@ feature {NONE} -- Initialization
 			tree_assigned: tree = a_graph
 		end
 
-	make_out_edges
-			-- Create `out_edges'
-		do
-			Precursor
-			check attached out_edges as o then
-				o.set_ordered
-			end
-		end
+--	make_out_edges
+--			-- Create `out_edges'
+--		do
+--			Precursor
+--			check attached out_edges as o then
+--				o.set_ordered
+--			end
+--		end
 
 feature -- Access
 

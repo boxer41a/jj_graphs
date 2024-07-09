@@ -1,7 +1,7 @@
 note
 	description: "[
 		An ordered collection of edges beginning at a `start_node'.
-		Edges can only be added and	removed from the end.
+		Edges can only be added and removed from the end.
 		This is to be used with a {GRAPH}.
 		]"
 	author:		"Jimmy J. Johnson"

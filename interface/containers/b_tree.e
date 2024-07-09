@@ -41,7 +41,6 @@ feature {NONE} -- Initialization
 			n: like node_anchor
 		do
 			Precursor
-			set_ordered
 			create n.make_with_graph (Current)
 		end
 

@@ -211,7 +211,7 @@ feature -- Test routines
 
 feature {NONE} -- Implementation
 
-	graph_anchor: VALUED_WEIGHTED_GRAPH [STRING_8, INTEGER_REF]
+	graph_anchor: VALUED_WEIGHTED_GRAPH [STRING_8, INTEGER]
 			-- Anchor for features using a graph.
 			-- Not to be called; just used to anchor types.
 			-- Declared as a feature to avoid adding an attribute.
@@ -224,7 +224,7 @@ feature {NONE} -- Implementation
 			end
 		end
 
-	node_anchor: VALUED_WEIGHTED_NODE [STRING_8, INTEGER_REF]
+	node_anchor: VALUED_WEIGHTED_NODE [STRING_8, INTEGER]
 			-- Anchor for features using nodes.
 			-- Not to be called; just used to anchor types.
 			-- Declared as a feature to avoid adding an attribute.
@@ -237,7 +237,7 @@ feature {NONE} -- Implementation
 			end
 		end
 
-	edge_anchor: VALUED_WEIGHTED_EDGE [STRING_8, INTEGER_REF]
+	edge_anchor: VALUED_WEIGHTED_EDGE [STRING_8, INTEGER]
 			-- Anchor for features using nodes.
 			-- Not to be called; just used to anchor types.
 			-- Declared as a feature to avoid adding an attribute.
@@ -250,7 +250,7 @@ feature {NONE} -- Implementation
 			end
 		end
 
-	iterator_anchor: VALUED_WEIGHTED_GRAPH_ITERATOR [STRING_8, INTEGER_REF]
+	iterator_anchor: VALUED_WEIGHTED_GRAPH_ITERATOR [STRING_8, INTEGER]
 			-- Anchor for features using graph iterators.
 			-- Not to be called; just used to anchor types.
 			-- Declared a feature to avoid adding an attribute.
@@ -263,7 +263,7 @@ feature {NONE} -- Implementation
 			end
 		end
 
-	path_anchor: VALUED_WEIGHTED_PATH [STRING_8, INTEGER_REF]
+	path_anchor: VALUED_WEIGHTED_PATH [STRING_8, INTEGER]
 			-- Anchor for features using paths.
 			-- Not to be called; just used to anchor types.
 			-- Declared a feature to avoid adding an attribute.

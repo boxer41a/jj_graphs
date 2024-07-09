@@ -22,7 +22,7 @@ feature {NONE} -- Initialization
 			io.put_string ("--- Begin graph testing -----------------------------------%N")
 
 --			create graph_tester
---			create valued_graph_tester
+			create valued_graph_tester
 			create valued_weighted_graph_tester
 			run_tests
 
@@ -34,7 +34,7 @@ feature {NONE} -- Initialization
 feature -- Access
 
 --	graph_tester: GRAPH_TESTS
---	valued_graph_tester: VALUED_GRAPH_TESTS
+	valued_graph_tester: VALUED_GRAPH_TESTS
 	valued_weighted_graph_tester: VALUED_WEIGHTED_GRAPH_TESTS
 
 feature -- Basic operations
@@ -43,7 +43,7 @@ feature -- Basic operations
 			-- Call features from `tester' as demo
 		do
 --			test_graph
---			test_valued_graph
+			test_valued_graph
 			test_valued_weighted_graph
 		end
 
@@ -60,18 +60,18 @@ feature -- Basic operations
 --			graph_tester.shortest_first
 --		end
 
---	test_valued_graph
---			-- Demo/test feature from {VALUED_GRAPH}
---		do
---			valued_graph_tester.verify_graph_2
---			valued_graph_tester.verify_graph_3
---			valued_graph_tester.verify_graph_4
---			valued_graph_tester.breadth_first
---			valued_graph_tester.depth_first
---			valued_graph_tester.post_order
---			valued_graph_tester.in_order
---			valued_graph_tester.shortest_first
---		end
+	test_valued_graph
+			-- Demo/test feature from {VALUED_GRAPH}
+		do
+			valued_graph_tester.verify_graph_2
+			valued_graph_tester.verify_graph_3
+			valued_graph_tester.verify_graph_4
+			valued_graph_tester.breadth_first
+			valued_graph_tester.depth_first
+			valued_graph_tester.post_order
+			valued_graph_tester.in_order
+			valued_graph_tester.shortest_first
+		end
 
 	test_valued_weighted_graph
 			-- Demo/test feature from {VALUED_WEIGHTED_GRAPH}
@@ -114,18 +114,19 @@ feature {NONE} -- Implementation
 			lwn: LABELED_WEIGHTED_NODE [STREET, DISTANCE]
 			lwe: LABELED_WEIGHTED_EDGE [STREET, DISTANCE]
 			vlwg: VALUED_LABELED_WEIGHTED_GRAPH [CITY, STREET, DISTANCE]
---			vlwn: VALUED_LABELED_WEIGHTED_NODE [CITY, STREET, DISTANCE]
---			vlwe: VALUED_LABELED_WEIGHTED_EDGE [CITY, STREET, DISTANCE]
+			vlwn: VALUED_LABELED_WEIGHTED_NODE [CITY, STREET, DISTANCE]
+			vlwe: VALUED_LABELED_WEIGHTED_EDGE [CITY, STREET, DISTANCE]
 
---			t: JJ_TREE
---			vt: VALUED_TREE [CITY]
---			lt: LABELED_TREE [STREET]
---			wt: WEIGHTED_TREE [DISTANCE]
---			vlt: VALUED_LABELED_TREE [CITY, STREET]
---			vwt: VALUED_WEIGHTED_TREE [CITY, DISTANCE]
---			lwt: LABELED_WEIGHTED_TREE [STREET, DISTANCE]
---			vlwt: VALUED_LABELED_WEIGHTED_TREE [CITY, STREET, DISTANCE]
+			t: JJ_TREE
+			vt: VALUED_TREE [CITY]
+			lt: LABELED_TREE [STREET]
+			wt: WEIGHTED_TREE [DISTANCE]
+			vlt: VALUED_LABELED_TREE [CITY, STREET]
+			vwt: VALUED_WEIGHTED_TREE [CITY, DISTANCE]
+			lwt: LABELED_WEIGHTED_TREE [STREET, DISTANCE]
+			vlwt: VALUED_LABELED_WEIGHTED_TREE [CITY, STREET, DISTANCE]
 
+			b_tree: B_TREE [STRING]
 		do
 		end
 

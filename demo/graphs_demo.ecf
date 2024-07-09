@@ -5,10 +5,9 @@
 		<file_rule>
 			<exclude>/\.svn</exclude>
 		</file_rule>
-		<option warning="warning" manifest_array_type="mismatch_warning">
-			<assertions precondition="true" postcondition="true" check="true" invariant="true" loop="true" supplier_precondition="true"/>
+		<option>
+			<assertions precondition="true" postcondition="true" check="true" invariant="true" supplier_precondition="true"/>
 		</option>
-		<setting name="dead_code_removal" value="feature"/>
 		<capability>
 			<concurrency support="none"/>
 			<void_safety support="all"/>
@@ -28,13 +27,17 @@
 		<cluster name="demo" location=".\">
 			<description>This cluster holds classes for testing the graphs cluster.</description>
 			<option is_obsolete_routine_type="false">
-				<assertions precondition="true" postcondition="true" check="true" invariant="true" loop="true"/>
+				<assertions precondition="true"/>
 			</option>
 			<file_rule>
 				<exclude>/\.svn</exclude>
 			</file_rule>
 		</cluster>
-		<cluster name="tests" location="..\..\jj_graphs\tests\"/>
+		<cluster name="tests" location="..\..\jj_graphs\tests\">
+			<option>
+				<assertions precondition="true"/>
+			</option>
+		</cluster>
 		<override name="override" location="..\..\jj_graphs\tests\override\" recursive="true"/>
 	</target>
 </system>

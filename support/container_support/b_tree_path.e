@@ -21,6 +21,7 @@ inherit
 		end
 
 create
+	default_create,
 	make
 
 feature {NONE} -- Anchors (for covariant redefinitions)
